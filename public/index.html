@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>arXiv RL Weekly</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-block">
+        <p class="eyebrow">arXiv RL Weekly / 强化学习</p>
+        <h1>论文周报</h1>
+      </div>
+      <div class="toolbar" aria-label="主要操作">
+        <button id="refreshButton" class="primary-button refresh-button" type="button" title="刷新论文">
+          <span aria-hidden="true">↻</span>
+          <span>刷新</span>
+        </button>
+        <button id="copyDigestButton" class="primary-button" type="button">
+          复制周报
+        </button>
+      </div>
+    </header>
+
+    <div class="system-banner" role="status">
+      <span aria-hidden="true">●</span>
+      <span id="systemBannerText">System status: loading RL corpus.</span>
+    </div>
+
+    <main>
+      <section class="controls" aria-label="筛选条件">
+        <label>
+          <span>时间范围</span>
+          <select id="daysSelect">
+            <option value="7">最近 7 天</option>
+            <option value="14">最近 14 天</option>
+            <option value="30">最近 30 天</option>
+          </select>
+        </label>
+        <label>
+          <span>最多显示</span>
+          <select id="maxSelect">
+            <option value="40">40 篇</option>
+            <option value="80" selected>80 篇</option>
+            <option value="120">120 篇</option>
+          </select>
+        </label>
+        <label class="wide-control">
+          <span>关键词</span>
+          <input id="keywordsInput" type="text" value="reinforcement learning, policy gradient, q-learning, actor critic, offline rl, rlhf, reward model, markov decision process">
+        </label>
+        <label>
+          <span>主题</span>
+          <select id="topicSelect">
+            <option value="all">全部主题</option>
+          </select>
+        </label>
+        <label>
+          <span>排序</span>
+          <select id="sortSelect">
+            <option value="date">提交时间</option>
+            <option value="score">相关度</option>
+            <option value="saved">收藏优先</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="summary-strip" aria-label="周报概览">
+        <div>
+          <p>匹配论文</p>
+          <span id="paperCount">--</span>
+        </div>
+        <div>
+          <p>已收藏</p>
+          <span id="savedCount">0</span>
+        </div>
+        <div>
+          <p>更新时间</p>
+          <span id="generatedAt">--</span>
+        </div>
+      </section>
+      <div id="sourceNotice" class="source-notice" hidden></div>
+
+      <section class="layout">
+        <aside class="digest-panel" aria-label="周报文本">
+          <div class="panel-heading">
+            <h2>本周摘要</h2>
+            <button id="savedOnlyButton" class="text-button" type="button">只看收藏</button>
+          </div>
+          <textarea id="digestOutput" spellcheck="false" aria-label="可复制的周报 Markdown"></textarea>
+        </aside>
+
+        <section class="paper-section" aria-label="论文列表">
+          <div id="status" class="status">正在载入 arXiv 论文...</div>
+          <div id="paperList" class="paper-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <template id="paperTemplate">
+      <article class="paper-card">
+        <div class="paper-card-main">
+          <div class="paper-meta">
+            <span class="date"></span>
+            <span class="score"></span>
+          </div>
+          <h2 class="title"></h2>
+          <p class="highlight"></p>
+          <div class="topics"></div>
+          <p class="authors"></p>
+        </div>
+        <div class="paper-actions">
+          <button class="save-button" type="button" title="收藏论文" aria-label="收藏论文">☆</button>
+          <a class="abs-link" target="_blank" rel="noreferrer">摘要</a>
+          <a class="pdf-link" target="_blank" rel="noreferrer">PDF</a>
+        </div>
+      </article>
+    </template>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

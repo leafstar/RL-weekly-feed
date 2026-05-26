@@ -1,0 +1,11 @@
+{
+  "name": "arxiv-rl-weekly",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A tiny local app for weekly reinforcement learning paper digests from arXiv.",
+  "scripts": {
+    "start": "node server.mjs",
+    "digest": "node weekly-digest.mjs"
+  }
+}
