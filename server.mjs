@@ -71,24 +71,54 @@ async function readJsonBody(req, limitBytes = 200_000) {
   return body ? JSON.parse(body) : {};
 }
 
-async function readSavedPaperIds() {
+function normalizePaperId(id = "") {
+  return String(id).trim().replace(/v\d+$/i, "");
+}
+
+function normalizeSavedPaperDetails(details = {}) {
+  const normalized = {};
+  if (!details || typeof details !== "object" || Array.isArray(details)) return normalized;
+
+  for (const [rawId, rawDetail] of Object.entries(details)) {
+    if (!rawDetail || typeof rawDetail !== "object") continue;
+    const id = normalizePaperId(rawDetail.id || rawId);
+    if (!id) continue;
+    normalized[id] = {
+      id,
+      title: String(rawDetail.title || id).trim(),
+      published: rawDetail.published || "",
+      topics: Array.isArray(rawDetail.topics) ? rawDetail.topics.map(String).filter(Boolean) : [],
+      absUrl: rawDetail.absUrl || "",
+      pdfUrl: rawDetail.pdfUrl || ""
+    };
+  }
+
+  return normalized;
+}
+
+async function readSavedPapers() {
   try {
     const raw = await readFile(savedPapersPath, "utf8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed.savedPapers)
-      ? parsed.savedPapers.map(String).filter(Boolean)
+    const savedPapers = Array.isArray(parsed.savedPapers)
+      ? [...new Set(parsed.savedPapers.map(normalizePaperId).filter(Boolean))].sort()
       : [];
+    const savedPaperDetails = normalizeSavedPaperDetails(parsed.savedPaperDetails);
+    return { savedPapers, savedPaperDetails };
   } catch (error) {
-    if (error.code === "ENOENT") return [];
+    if (error.code === "ENOENT") return { savedPapers: [], savedPaperDetails: {} };
     throw error;
   }
 }
 
-async function writeSavedPaperIds(savedPapers) {
-  const ids = [...new Set((savedPapers || []).map(String).map((id) => id.trim()).filter(Boolean))].sort();
+async function writeSavedPapers(savedPapers, savedPaperDetails = {}) {
+  const ids = [...new Set((savedPapers || []).map(normalizePaperId).filter(Boolean))].sort();
+  const normalizedDetails = normalizeSavedPaperDetails(savedPaperDetails);
+  const details = Object.fromEntries(ids.filter((id) => normalizedDetails[id]).map((id) => [id, normalizedDetails[id]]));
+  const payload = { savedPapers: ids, savedPaperDetails: details };
   await mkdir(dataDir, { recursive: true });
-  await writeFile(savedPapersPath, `${JSON.stringify({ savedPapers: ids }, null, 2)}\n`, "utf8");
-  return ids;
+  await writeFile(savedPapersPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  return payload;
 }
 
 function parseDate(value) {
@@ -857,13 +887,13 @@ export const server = createServer(async (req, res) => {
   if (url.pathname === "/api/saved") {
     try {
       if (req.method === "GET") {
-        sendJson(res, 200, { savedPapers: await readSavedPaperIds() });
+        sendJson(res, 200, await readSavedPapers());
         return;
       }
 
       if (req.method === "PUT") {
         const body = await readJsonBody(req);
-        sendJson(res, 200, { savedPapers: await writeSavedPaperIds(body.savedPapers) });
+        sendJson(res, 200, await writeSavedPapers(body.savedPapers, body.savedPaperDetails));
         return;
       }
 

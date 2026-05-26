@@ -28,10 +28,19 @@ const defaultSelectedKeywords = new Set([
   "reward model"
 ]);
 
+function normalizePaperId(id = "") {
+  return String(id).trim().replace(/v\d+$/i, "");
+}
+
+function normalizeSavedIds(ids = []) {
+  return Array.isArray(ids) ? ids.map(normalizePaperId).filter(Boolean) : [];
+}
+
 const state = {
   papers: [],
-  saved: new Set(JSON.parse(localStorage.getItem("savedPapers") || "[]")),
-  selectedKeywords: new Set(JSON.parse(localStorage.getItem("selectedKeywords") || "null") || [...defaultSelectedKeywords]),
+  saved: new Set(normalizeSavedIds(readLocalJson("savedPapers", []))),
+  savedDetails: normalizeSavedPaperDetails(readLocalJson("savedPaperDetails", {})),
+  selectedKeywords: new Set(readLocalJson("selectedKeywords", null) || [...defaultSelectedKeywords]),
   savedOnly: false,
   meta: null
 };
@@ -52,6 +61,8 @@ const els = {
   generatedAt: document.querySelector("#generatedAt"),
   systemBannerText: document.querySelector("#systemBannerText"),
   sourceNotice: document.querySelector("#sourceNotice"),
+  savedPanelCount: document.querySelector("#savedPanelCount"),
+  savedList: document.querySelector("#savedList"),
   digestOutput: document.querySelector("#digestOutput"),
   savedOnlyButton: document.querySelector("#savedOnlyButton"),
   status: document.querySelector("#status"),
@@ -59,8 +70,80 @@ const els = {
   template: document.querySelector("#paperTemplate")
 };
 
+function readLocalJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    console.warn(`Could not parse localStorage key: ${key}`, error);
+    return fallback;
+  }
+}
+
+function normalizeSavedPaperDetails(details = {}) {
+  const normalized = {};
+  if (!details || typeof details !== "object" || Array.isArray(details)) return normalized;
+
+  for (const [rawId, rawDetail] of Object.entries(details)) {
+    if (!rawDetail || typeof rawDetail !== "object") continue;
+    const id = normalizePaperId(rawDetail.id || rawId);
+    if (!id) continue;
+    normalized[id] = {
+      id,
+      title: String(rawDetail.title || id).trim(),
+      published: rawDetail.published || "",
+      topics: Array.isArray(rawDetail.topics) ? rawDetail.topics.map(String).filter(Boolean) : [],
+      absUrl: rawDetail.absUrl || "",
+      pdfUrl: rawDetail.pdfUrl || ""
+    };
+  }
+
+  return normalized;
+}
+
 function saveSavedPapers() {
   localStorage.setItem("savedPapers", JSON.stringify([...state.saved]));
+}
+
+function saveSavedPaperDetails() {
+  const details = {};
+  for (const id of state.saved) {
+    if (state.savedDetails[id]) details[id] = state.savedDetails[id];
+  }
+  state.savedDetails = details;
+  localStorage.setItem("savedPaperDetails", JSON.stringify(details));
+}
+
+function snapshotSavedPaper(paper) {
+  const id = normalizePaperId(paper.id);
+  return {
+    id,
+    title: paper.title,
+    published: paper.published,
+    topics: paper.topics || [],
+    absUrl: paper.absUrl,
+    pdfUrl: paper.pdfUrl
+  };
+}
+
+function rememberSavedPaper(paper) {
+  const id = normalizePaperId(paper.id);
+  if (!id) return false;
+  const next = snapshotSavedPaper(paper);
+  const changed = JSON.stringify(state.savedDetails[id]) !== JSON.stringify(next);
+  state.savedDetails[id] = next;
+  return changed;
+}
+
+function rememberVisibleSavedPapers() {
+  let changed = false;
+  for (const paper of state.papers) {
+    if (state.saved.has(normalizePaperId(paper.id))) {
+      changed = rememberSavedPaper(paper) || changed;
+    }
+  }
+  if (changed) saveSavedPaperDetails();
+  return changed;
 }
 
 async function loadSavedPapers() {
@@ -68,11 +151,17 @@ async function loadSavedPapers() {
     const response = await fetch("/api/saved");
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || payload.error || "读取收藏失败");
-    const persisted = Array.isArray(payload.savedPapers) ? payload.savedPapers : [];
-    const local = JSON.parse(localStorage.getItem("savedPapers") || "[]");
+    const persisted = normalizeSavedIds(payload.savedPapers);
+    const local = normalizeSavedIds(readLocalJson("savedPapers", []));
+    const persistedIds = new Set(persisted);
     state.saved = new Set([...persisted, ...local]);
+    state.savedDetails = normalizeSavedPaperDetails({
+      ...normalizeSavedPaperDetails(payload.savedPaperDetails),
+      ...state.savedDetails
+    });
     saveSavedPapers();
-    if (local.length && !persisted.length) await persistSavedPapers();
+    saveSavedPaperDetails();
+    if ([...state.saved].some((id) => !persistedIds.has(id))) await persistSavedPapers();
   } catch (error) {
     console.warn("Could not load saved papers from local file.", error);
   }
@@ -82,12 +171,14 @@ async function persistSavedPapers() {
   const response = await fetch("/api/saved", {
     method: "PUT",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ savedPapers: [...state.saved] })
+    body: JSON.stringify({ savedPapers: [...state.saved], savedPaperDetails: state.savedDetails })
   });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.detail || payload.error || "保存收藏失败");
-  state.saved = new Set(payload.savedPapers || []);
+  state.saved = new Set((payload.savedPapers || []).map(normalizePaperId).filter(Boolean));
+  state.savedDetails = normalizeSavedPaperDetails(payload.savedPaperDetails || state.savedDetails);
   saveSavedPapers();
+  saveSavedPaperDetails();
 }
 
 function saveSelectedKeywords() {
@@ -182,7 +273,7 @@ function updateTopicOptions() {
 function getFilteredPapers() {
   const topic = els.topicSelect.value;
   const papers = state.papers
-    .filter((paper) => !state.savedOnly || state.saved.has(paper.id))
+    .filter((paper) => !state.savedOnly || state.saved.has(normalizePaperId(paper.id)))
     .filter((paper) => topic === "all" || paper.topics.includes(topic));
 
   if (els.sortSelect.value === "score") {
@@ -191,7 +282,7 @@ function getFilteredPapers() {
 
   if (els.sortSelect.value === "saved") {
     return papers.toSorted((a, b) => {
-      const savedDelta = Number(state.saved.has(b.id)) - Number(state.saved.has(a.id));
+      const savedDelta = Number(state.saved.has(normalizePaperId(b.id))) - Number(state.saved.has(normalizePaperId(a.id)));
       return savedDelta || new Date(b.published) - new Date(a.published);
     });
   }
@@ -205,7 +296,7 @@ function buildDigest(papers) {
 
   const start = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date(meta.startDate));
   const end = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date(meta.endDate));
-  const savedPapers = papers.filter((paper) => state.saved.has(paper.id));
+  const savedPapers = papers.filter((paper) => state.saved.has(normalizePaperId(paper.id)));
   const topPapers = (savedPapers.length ? savedPapers : papers).slice(0, 12);
   const topicCounts = new Map();
   for (const paper of papers) {
@@ -263,6 +354,85 @@ function renderSummary(papers) {
   renderSourceNotice();
   els.digestOutput.value = buildDigest(papers);
   els.savedOnlyButton.textContent = state.savedOnly ? "显示全部" : "只看收藏";
+  renderSavedList();
+}
+
+async function removeSavedPaper(id) {
+  const previous = new Set(state.saved);
+  const previousDetails = { ...state.savedDetails };
+  state.saved.delete(id);
+  delete state.savedDetails[id];
+  saveSavedPapers();
+  saveSavedPaperDetails();
+  renderPapers();
+
+  try {
+    await persistSavedPapers();
+    renderPapers();
+  } catch (error) {
+    state.saved = previous;
+    state.savedDetails = previousDetails;
+    saveSavedPapers();
+    saveSavedPaperDetails();
+    renderPapers();
+    els.status.textContent = `保存收藏失败：${error.message}`;
+    els.status.className = "status visible error";
+  }
+}
+
+function renderSavedList() {
+  const savedIds = [...state.saved].toSorted((a, b) => {
+    const aDate = new Date(state.savedDetails[a]?.published || 0);
+    const bDate = new Date(state.savedDetails[b]?.published || 0);
+    return bDate - aDate || a.localeCompare(b);
+  });
+  els.savedPanelCount.textContent = String(savedIds.length);
+  els.savedList.innerHTML = "";
+
+  if (!savedIds.length) {
+    const empty = document.createElement("p");
+    empty.className = "saved-empty";
+    empty.textContent = "还没有收藏论文。";
+    els.savedList.append(empty);
+    return;
+  }
+
+  for (const id of savedIds) {
+    const normalizedId = normalizePaperId(id);
+    const paper = state.papers.find((item) => normalizePaperId(item.id) === normalizedId);
+    const detail = paper ? snapshotSavedPaper(paper) : state.savedDetails[normalizedId];
+    const item = document.createElement("article");
+    item.className = `saved-item${paper ? "" : " missing"}`;
+
+    const jump = document.createElement("button");
+    jump.type = "button";
+    jump.className = "saved-jump";
+    jump.textContent = detail?.title || normalizedId;
+    jump.disabled = !paper;
+    jump.addEventListener("click", () => {
+      const card = document.querySelector(`[data-paper-id="${CSS.escape(normalizedId)}"]`);
+      card?.scrollIntoView({ behavior: "smooth", block: "start" });
+      card?.classList.add("focus-pulse");
+      window.setTimeout(() => card?.classList.remove("focus-pulse"), 900);
+    });
+
+    const meta = document.createElement("div");
+    meta.className = "saved-item-meta";
+    const metaParts = [];
+    if (detail?.published) metaParts.push(formatDate(detail.published));
+    if (detail?.topics?.length) metaParts.push(detail.topics.slice(0, 2).join(", "));
+    if (!paper) metaParts.push("当前结果外");
+    meta.textContent = metaParts.join(" / ") || "当前结果外";
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "saved-remove";
+    remove.textContent = "移除";
+    remove.addEventListener("click", () => removeSavedPaper(normalizedId));
+
+    item.append(jump, meta, remove);
+    els.savedList.append(item);
+  }
 }
 
 function renderSourceNotice() {
@@ -300,7 +470,9 @@ function renderPapers() {
   els.status.className = "status";
   for (const paper of papers) {
     const node = els.template.content.firstElementChild.cloneNode(true);
-    const isSaved = state.saved.has(paper.id);
+    const paperId = normalizePaperId(paper.id);
+    const isSaved = state.saved.has(paperId);
+    node.dataset.paperId = paperId;
     node.classList.toggle("saved", isSaved);
     node.querySelector(".date").textContent = formatDate(paper.published);
     node.querySelector(".score").textContent = `相关度 ${paper.score}`;
@@ -330,24 +502,30 @@ function renderPapers() {
     }
 
     node.querySelector(".save-button").addEventListener("click", async () => {
-      const wasSaved = state.saved.has(paper.id);
-      if (state.saved.has(paper.id)) {
-        state.saved.delete(paper.id);
+      const wasSaved = state.saved.has(paperId);
+      const previousDetails = { ...state.savedDetails };
+      if (state.saved.has(paperId)) {
+        state.saved.delete(paperId);
+        delete state.savedDetails[paperId];
       } else {
-        state.saved.add(paper.id);
+        state.saved.add(paperId);
+        rememberSavedPaper(paper);
       }
       saveSavedPapers();
+      saveSavedPaperDetails();
       renderPapers();
       try {
         await persistSavedPapers();
         renderPapers();
       } catch (error) {
         if (wasSaved) {
-          state.saved.add(paper.id);
+          state.saved.add(paperId);
         } else {
-          state.saved.delete(paper.id);
+          state.saved.delete(paperId);
         }
+        state.savedDetails = previousDetails;
         saveSavedPapers();
+        saveSavedPaperDetails();
         renderPapers();
         els.status.textContent = `保存收藏失败：${error.message}`;
         els.status.className = "status visible error";
@@ -382,6 +560,7 @@ async function loadPapers() {
     }
     state.papers = payload.papers;
     state.meta = payload.meta;
+    if (rememberVisibleSavedPapers()) await persistSavedPapers();
     updateTopicOptions();
     renderPapers();
   } catch (error) {

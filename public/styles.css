@@ -488,6 +488,121 @@ textarea:focus {
   font-size: 12px;
 }
 
+.saved-panel {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: var(--border-thin);
+  background: var(--panel);
+}
+
+.saved-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.saved-panel-heading h3 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.saved-panel-heading span {
+  display: inline-grid;
+  min-width: 32px;
+  min-height: 28px;
+  place-items: center;
+  border: var(--border-thin);
+  background: var(--primary);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.saved-list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.saved-empty {
+  margin: 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.saved-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 8px;
+  padding: 8px;
+  border: var(--border-thin);
+  background: #fffaf1;
+}
+
+.saved-item.missing {
+  background: #f5dddb;
+}
+
+.saved-jump {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.saved-jump:hover {
+  text-decoration: underline;
+}
+
+.saved-jump:disabled {
+  cursor: default;
+  text-decoration: none;
+}
+
+.saved-item-meta {
+  grid-column: 1 / 2;
+  color: var(--muted);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.saved-remove {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  min-height: 30px;
+  align-self: stretch;
+  padding: 0 8px;
+  border: var(--border-thin);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.saved-remove:hover {
+  background: var(--primary);
+}
+
 textarea {
   width: 100%;
   min-height: 560px;
@@ -545,6 +660,11 @@ textarea {
 
 .paper-card.saved {
   background: #fffaf1;
+}
+
+.paper-card.focus-pulse {
+  outline: 5px solid var(--primary);
+  outline-offset: 6px;
 }
 
 .paper-card.saved .paper-card-main {
