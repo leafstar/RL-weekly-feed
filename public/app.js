@@ -1,6 +1,37 @@
+const keywordBank = [
+  "reinforcement learning",
+  "world model",
+  "model-based reinforcement learning",
+  "robot learning",
+  "exoskeleton",
+  "wearable robot",
+  "locomotion",
+  "human-robot interaction",
+  "sim-to-real",
+  "offline reinforcement learning",
+  "policy gradient",
+  "reward model",
+  "rlhf",
+  "preference optimization"
+];
+
+const defaultSelectedKeywords = new Set([
+  "reinforcement learning",
+  "world model",
+  "model-based reinforcement learning",
+  "robot learning",
+  "exoskeleton",
+  "wearable robot",
+  "locomotion",
+  "offline reinforcement learning",
+  "policy gradient",
+  "reward model"
+]);
+
 const state = {
   papers: [],
   saved: new Set(JSON.parse(localStorage.getItem("savedPapers") || "[]")),
+  selectedKeywords: new Set(JSON.parse(localStorage.getItem("selectedKeywords") || "null") || [...defaultSelectedKeywords]),
   savedOnly: false,
   meta: null
 };
@@ -10,7 +41,9 @@ const els = {
   copyDigestButton: document.querySelector("#copyDigestButton"),
   daysSelect: document.querySelector("#daysSelect"),
   maxSelect: document.querySelector("#maxSelect"),
-  keywordsInput: document.querySelector("#keywordsInput"),
+  keywordChips: document.querySelector("#keywordChips"),
+  keywordInput: document.querySelector("#keywordInput"),
+  addKeywordButton: document.querySelector("#addKeywordButton"),
   topicSelect: document.querySelector("#topicSelect"),
   sortSelect: document.querySelector("#sortSelect"),
   paperCount: document.querySelector("#paperCount"),
@@ -27,6 +60,49 @@ const els = {
 
 function saveSavedPapers() {
   localStorage.setItem("savedPapers", JSON.stringify([...state.saved]));
+}
+
+function saveSelectedKeywords() {
+  localStorage.setItem("selectedKeywords", JSON.stringify([...state.selectedKeywords]));
+}
+
+function getSelectedKeywords() {
+  return [...state.selectedKeywords].map((keyword) => keyword.trim()).filter(Boolean);
+}
+
+function addKeyword(keyword) {
+  const clean = keyword.trim();
+  if (!clean) return false;
+  state.selectedKeywords.add(clean);
+  saveSelectedKeywords();
+  renderKeywordChips();
+  return true;
+}
+
+function renderKeywordChips() {
+  const knownKeywords = [...new Set([...keywordBank, ...state.selectedKeywords])];
+  els.keywordChips.innerHTML = "";
+
+  for (const keyword of knownKeywords) {
+    const selected = state.selectedKeywords.has(keyword);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = `keyword-chip${selected ? " selected" : ""}`;
+    chip.setAttribute("aria-pressed", String(selected));
+    chip.textContent = keyword;
+    chip.addEventListener("click", () => {
+      if (state.selectedKeywords.has(keyword)) {
+        if (state.selectedKeywords.size === 1) return;
+        state.selectedKeywords.delete(keyword);
+      } else {
+        state.selectedKeywords.add(keyword);
+      }
+      saveSelectedKeywords();
+      renderKeywordChips();
+      loadPapers();
+    });
+    els.keywordChips.append(chip);
+  }
 }
 
 function formatDate(dateString) {
@@ -222,7 +298,7 @@ async function loadPapers() {
   const params = new URLSearchParams({
     days: els.daysSelect.value,
     max: els.maxSelect.value,
-    keywords: els.keywordsInput.value
+    keywords: getSelectedKeywords().join(",")
   });
 
   els.status.textContent = "正在载入 arXiv 论文...";
@@ -282,7 +358,20 @@ els.refreshButton.addEventListener("click", loadPapers);
 els.copyDigestButton.addEventListener("click", copyDigest);
 els.daysSelect.addEventListener("change", loadPapers);
 els.maxSelect.addEventListener("change", loadPapers);
-els.keywordsInput.addEventListener("change", loadPapers);
+els.addKeywordButton.addEventListener("click", () => {
+  if (addKeyword(els.keywordInput.value)) {
+    els.keywordInput.value = "";
+    loadPapers();
+  }
+});
+els.keywordInput.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  if (addKeyword(els.keywordInput.value)) {
+    els.keywordInput.value = "";
+    loadPapers();
+  }
+});
 els.topicSelect.addEventListener("change", renderPapers);
 els.sortSelect.addEventListener("change", renderPapers);
 els.savedOnlyButton.addEventListener("click", () => {
@@ -290,4 +379,5 @@ els.savedOnlyButton.addEventListener("click", () => {
   renderPapers();
 });
 
+renderKeywordChips();
 loadPapers();

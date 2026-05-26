@@ -1,4 +1,4 @@
-import { fetchArxiv } from "./server.mjs";
+import { DEFAULT_CATEGORIES, DEFAULT_KEYWORDS, fetchArxiv } from "./server.mjs";
 
 const args = new Map();
 for (const arg of process.argv.slice(2)) {
@@ -8,20 +8,11 @@ for (const arg of process.argv.slice(2)) {
 
 const days = Number.parseInt(args.get("days") || "7", 10);
 const maxResults = Number.parseInt(args.get("max") || "80", 10);
-const keywords = (args.get("keywords") || [
-  "reinforcement learning",
-  "policy gradient",
-  "q-learning",
-  "actor critic",
-  "offline rl",
-  "rlhf",
-  "reward model",
-  "markov decision process"
-].join(","))
+const keywords = (args.get("keywords") || DEFAULT_KEYWORDS.join(","))
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
-const categories = (args.get("categories") || "cs.LG,cs.AI,cs.RO,stat.ML")
+const categories = (args.get("categories") || DEFAULT_CATEGORIES.join(","))
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);

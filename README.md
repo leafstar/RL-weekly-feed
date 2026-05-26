@@ -1,6 +1,6 @@
 # arXiv RL Weekly
 
-一个本地小网页，用来每周整理 arXiv 上新的强化学习相关论文。它会从 arXiv API 抓取最近 7/14/30 天论文，按关键词和 arXiv 分类筛选，自动给出主题标签、短摘要、收藏状态和可复制的 Markdown 周报。
+一个本地小网页，用来每周整理 arXiv 上新的强化学习相关论文。它会从 arXiv API 抓取最近 7/14/30 天论文，同时检查标题和摘要，按关键词和 arXiv 分类筛选，自动给出主题标签、短摘要、收藏状态和可复制的 Markdown 周报。
 
 ## 运行
 
@@ -19,7 +19,8 @@ http://localhost:4173
 ## 使用方式
 
 - 默认检索最近 7 天的强化学习相关论文。
-- 可以调整时间范围、最多结果数、关键词、主题和排序。
+- 可以调整时间范围、最多显示数、关键词标签、主题和排序。
+- 关键词是可点选标签，也可以临时添加自己的关键词。
 - 点星标收藏论文后，左侧周报会优先使用收藏论文。
 - 点「复制周报」会把 Markdown 周报复制到剪贴板。
 
@@ -34,13 +35,19 @@ reinforcement learning, policy gradient, q-learning, actor critic, offline rl, r
 默认 arXiv 分类：
 
 ```text
-cs.LG, cs.AI, cs.RO, stat.ML
+cs.LG, cs.AI, cs.RO, stat.ML, eess.SY
 ```
 
-如果你关注方向更具体，可以在网页里的关键词输入框里加入这些词：
+默认关键词偏向强化学习、机器人学习、外骨骼和 world model：
 
 ```text
-multi-agent reinforcement learning, model-based reinforcement learning, robotics, preference optimization, exploration
+reinforcement learning, world model, model-based reinforcement learning, robot learning, exoskeleton, wearable robot, locomotion, offline reinforcement learning, policy gradient, reward model, rlhf
+```
+
+如果你关注方向更具体，可以在网页里的关键词标签区加入这些词：
+
+```text
+dexterous manipulation, prosthetics, gait assistance, sim-to-real, embodied AI, preference optimization
 ```
 
 ## 每周工作流
@@ -60,7 +67,7 @@ node weekly-digest.mjs
 可选参数：
 
 ```bash
-node weekly-digest.mjs --days=14 --max=120 --keywords="reinforcement learning,offline rl,rlhf,robotics"
+node weekly-digest.mjs --days=14 --max=120 --keywords="reinforcement learning,world model,exoskeleton,locomotion,robot learning"
 ```
 
 如果你想要全自动版本，可以让 Codex 给这个目录加一个每周一自动运行的任务，生成周报并发回当前线程。

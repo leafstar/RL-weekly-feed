@@ -9,6 +9,22 @@ const port = Number.parseInt(process.env.PORT || "4173", 10);
 const host = process.env.HOST || "127.0.0.1";
 const cache = new Map();
 
+export const DEFAULT_KEYWORDS = [
+  "reinforcement learning",
+  "world model",
+  "model-based reinforcement learning",
+  "robot learning",
+  "exoskeleton",
+  "wearable robot",
+  "locomotion",
+  "offline reinforcement learning",
+  "policy gradient",
+  "reward model",
+  "rlhf"
+];
+
+export const DEFAULT_CATEGORIES = ["cs.LG", "cs.AI", "cs.RO", "stat.ML", "eess.SY"];
+
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -288,43 +304,80 @@ function parseAbstractPage(html, fallback) {
   };
 }
 
-function keywordScore(paper, keywords) {
-  const haystack = [
-    paper.title,
-    paper.summary,
-    paper.categories.join(" ")
-  ].join(" ").toLowerCase();
+function normalizeText(text = "") {
+  return text
+    .toLowerCase()
+    .replace(/[‐-‒–—―]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  return keywords.reduce((score, keyword) => {
-    const escaped = keyword.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    if (!escaped) return score;
-    const regex = new RegExp(`\\b${escaped}\\b`, "g");
-    const matches = haystack.match(regex);
-    return score + (matches ? matches.length : 0);
+function keywordRegex(keyword) {
+  const clean = normalizeText(keyword).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!clean) return null;
+  return new RegExp(`(^|[^a-z0-9])${clean}([^a-z0-9]|$)`, "g");
+}
+
+function countKeywordHits(text, keyword) {
+  const regex = keywordRegex(keyword);
+  if (!regex) return 0;
+  return [...normalizeText(text).matchAll(regex)].length;
+}
+
+function keywordScore(paper, keywords) {
+  const title = paper.title || "";
+  const summary = paper.summary || "";
+  const categoryText = paper.categories.join(" ");
+  const base = keywords.reduce((score, keyword) => {
+    const titleHits = countKeywordHits(title, keyword);
+    const abstractHits = countKeywordHits(summary, keyword);
+    const categoryHits = countKeywordHits(categoryText, keyword);
+    return score + titleHits * 4 + abstractHits * 2 + categoryHits;
   }, 0);
+  const text = normalizeText(`${title} ${summary}`);
+  const rlContext = [
+    "reinforcement learning",
+    "rl",
+    "policy",
+    "reward",
+    "markov decision process",
+    "mdp",
+    "actor-critic",
+    "q-learning",
+    "control"
+  ].some((term) => countKeywordHits(text, term) > 0);
+  return base + (rlContext ? 1 : 0);
+}
+
+function topicHitScore(text, terms) {
+  return terms.reduce((score, term) => score + countKeywordHits(text, term), 0);
 }
 
 function classifyPaper(paper) {
-  const text = `${paper.title} ${paper.summary}`.toLowerCase();
+  const text = `${paper.title} ${paper.summary}`;
   const topics = [
-    ["LLM Agents", ["language model", "llm", "agent", "tool use", "reasoning"]],
-    ["Robotics", ["robot", "manipulation", "locomotion", "navigation", "embodied"]],
-    ["Offline RL", ["offline reinforcement", "batch reinforcement", "conservative", "dataset"]],
-    ["RLHF / Alignment", ["rlhf", "preference", "human feedback", "alignment", "reward model"]],
-    ["Multi-Agent RL", ["multi-agent", "multiagent", "game", "coordination", "opponent"]],
-    ["Model-Based RL", ["model-based", "world model", "dynamics model", "planning"]],
-    ["Exploration", ["exploration", "intrinsic", "curiosity", "uncertainty"]],
-    ["Theory", ["regret", "sample complexity", "convergence", "policy gradient", "theory"]]
+    ["World Models", ["world model", "world models", "world-modeling", "world modelling", "latent dynamics", "dynamics model", "dynamics models", "model-based reinforcement learning", "model-based rl", "dreamer"]],
+    ["Robot Learning", ["robot learning", "robot", "robots", "robotic", "robotics", "manipulation", "sim-to-real", "embodied"]],
+    ["Exoskeletons", ["exoskeleton", "exoskeletons", "wearable robot", "wearable robots", "assistive robot", "prosthetic", "prosthetics", "orthosis", "gait assistance"]],
+    ["Locomotion", ["locomotion", "legged", "quadruped", "biped", "walking", "gait"]],
+    ["Human-Robot Interaction", ["human-robot", "human robot", "human-in-the-loop", "shared autonomy", "teleoperation"]],
+    ["Offline RL", ["offline reinforcement learning", "offline rl", "batch reinforcement", "conservative q-learning", "dataset"]],
+    ["RLHF / Preference", ["rlhf", "preference optimization", "preference learning", "human feedback", "reward model"]],
+    ["Policy Optimization", ["policy gradient", "actor-critic", "ppo", "sac", "policy optimization"]],
+    ["Planning & Control", ["planning", "mpc", "optimal control", "trajectory optimization", "model predictive control"]],
+    ["Multi-Agent RL", ["multi-agent", "multiagent", "multi agent", "coordination", "opponent"]],
+    ["Exploration", ["exploration", "intrinsic reward", "curiosity", "uncertainty"]],
+    ["Theory", ["regret", "sample complexity", "convergence", "bellman", "theory"]]
   ];
 
   const hits = topics
     .map(([topic, keywords]) => ({
       topic,
-      score: keywords.reduce((sum, keyword) => sum + (text.includes(keyword) ? 1 : 0), 0)
+      score: topicHitScore(text, keywords)
     }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 2)
+    .slice(0, 3)
     .map((item) => item.topic);
 
   return hits.length ? hits : ["General RL"];
@@ -349,7 +402,7 @@ function enrichPapers(papers, keywords, startDate, endDate) {
     .filter((paper) => {
       const published = parseDate(paper.published);
       const inDateRange = !published || (published >= startDate && published < exclusiveEndDate);
-      return inDateRange && (paper.score > 0 || paper.categories.some((category) => category.startsWith("cs.LG")));
+      return inDateRange && paper.score > 0;
     })
     .sort((a, b) => {
       const dateDelta = new Date(b.published).getTime() - new Date(a.published).getTime();
@@ -360,11 +413,14 @@ function enrichPapers(papers, keywords, startDate, endDate) {
 function buildQuery({ keywords, categories, startDate, endDate }) {
   const keywordParts = keywords.map((keyword) => {
     const clean = keyword.replace(/"/g, "").trim();
-    return clean.includes(" ") ? `all:"${clean}"` : `all:${clean}`;
+    if (!clean) return "";
+    const titleTerm = clean.includes(" ") ? `ti:"${clean}"` : `ti:${clean}`;
+    const abstractTerm = clean.includes(" ") ? `abs:"${clean}"` : `abs:${clean}`;
+    return `(${titleTerm} OR ${abstractTerm})`;
   });
   const categoryParts = categories.map((category) => `cat:${category.trim()}`);
   const datePart = `submittedDate:[${formatArxivDate(startDate)} TO ${formatArxivDate(addDays(endDate, 1))}]`;
-  return `(${keywordParts.join(" OR ")}) AND (${categoryParts.join(" OR ")}) AND ${datePart}`;
+  return `(${keywordParts.filter(Boolean).join(" OR ")}) AND (${categoryParts.join(" OR ")}) AND ${datePart}`;
 }
 
 function buildSearchUrl({ keywords, startDate, endDate, maxResults }) {
@@ -686,20 +742,11 @@ export const server = createServer(async (req, res) => {
   if (url.pathname === "/api/papers") {
     const days = Math.min(Math.max(Number.parseInt(url.searchParams.get("days") || "7", 10), 1), 60);
     const maxResults = Math.min(Math.max(Number.parseInt(url.searchParams.get("max") || "80", 10), 5), 200);
-    const keywords = (url.searchParams.get("keywords") || [
-      "reinforcement learning",
-      "policy gradient",
-      "q-learning",
-      "markov decision process",
-      "actor critic",
-      "reward model",
-      "offline rl",
-      "rlhf"
-    ].join(","))
+    const keywords = (url.searchParams.get("keywords") || DEFAULT_KEYWORDS.join(","))
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-    const categories = (url.searchParams.get("categories") || "cs.LG,cs.AI,cs.RO,stat.ML")
+    const categories = (url.searchParams.get("categories") || DEFAULT_CATEGORIES.join(","))
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);

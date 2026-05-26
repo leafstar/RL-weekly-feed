@@ -224,13 +224,74 @@ label {
   min-width: 0;
 }
 
-label span {
+label span,
+.keyword-control > span {
   color: var(--muted);
   font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.keyword-control {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.keyword-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.keyword-chip,
+.chip-add-button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: var(--border-thin);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.keyword-chip:hover,
+.chip-add-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--black);
+}
+
+.keyword-chip.selected {
+  background: var(--secondary);
+}
+
+.keyword-chip.selected:nth-child(3n + 1) {
+  background: var(--primary);
+}
+
+.keyword-chip.selected:nth-child(3n + 2) {
+  background: #efeaff;
+}
+
+.keyword-add-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 8px;
+}
+
+.chip-add-button {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--yellow);
 }
 
 select,
@@ -671,6 +732,10 @@ textarea {
   .paper-actions {
     gap: 14px;
     padding: 20px 18px 22px;
+  }
+
+  .keyword-add-row {
+    grid-template-columns: 1fr;
   }
 
   .save-button,

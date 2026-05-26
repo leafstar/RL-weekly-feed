@@ -46,10 +46,14 @@
             <option value="120">120 篇</option>
           </select>
         </label>
-        <label class="wide-control">
+        <div class="keyword-control wide-control">
           <span>关键词</span>
-          <input id="keywordsInput" type="text" value="reinforcement learning, policy gradient, q-learning, actor critic, offline rl, rlhf, reward model, markov decision process">
-        </label>
+          <div id="keywordChips" class="keyword-chips" aria-label="关键词标签"></div>
+          <div class="keyword-add-row">
+            <input id="keywordInput" type="text" placeholder="添加关键词，如 dexterous manipulation">
+            <button id="addKeywordButton" class="chip-add-button" type="button">添加</button>
+          </div>
+        </div>
         <label>
           <span>主题</span>
           <select id="topicSelect">
