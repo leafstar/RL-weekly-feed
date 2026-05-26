@@ -26,12 +26,6 @@ http://localhost:4173
 
 ## 默认检索设置
 
-默认关键词：
-
-```text
-reinforcement learning, policy gradient, q-learning, actor critic, offline rl, rlhf, reward model, markov decision process
-```
-
 默认 arXiv 分类：
 
 ```text
