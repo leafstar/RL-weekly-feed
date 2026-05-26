@@ -389,38 +389,113 @@ function keywordScore(paper, keywords) {
   return base + (rlContext ? 1 : 0);
 }
 
-function topicHitScore(text, terms) {
-  return terms.reduce((score, term) => score + countKeywordHits(text, term), 0);
+function scoreTopic(text, topic) {
+  if (topic.requiresAny && !topic.requiresAny.some((term) => countKeywordHits(text, term) > 0)) {
+    return {
+      topic: topic.name,
+      strongScore: 0,
+      score: 0
+    };
+  }
+
+  const strongScore = topic.strong.reduce((score, term) => score + countKeywordHits(text, term), 0);
+  const weakScore = (topic.weak || []).reduce((score, term) => score + countKeywordHits(text, term), 0);
+  return {
+    topic: topic.name,
+    strongScore,
+    score: strongScore * 3 + weakScore
+  };
 }
 
 function classifyPaper(paper) {
   const text = `${paper.title} ${paper.summary}`;
   const topics = [
-    ["World Models", ["world model", "world models", "world-modeling", "world modelling", "latent dynamics", "dynamics model", "dynamics models", "model-based reinforcement learning", "model-based rl", "dreamer"]],
-    ["Robot Learning", ["robot learning", "robot", "robots", "robotic", "robotics", "manipulation", "sim-to-real", "embodied"]],
-    ["Exoskeletons", ["exoskeleton", "exoskeletons", "wearable robot", "wearable robots", "assistive robot", "prosthetic", "prosthetics", "orthosis", "gait assistance"]],
-    ["Locomotion", ["locomotion", "legged", "quadruped", "biped", "walking", "gait"]],
-    ["Human-Robot Interaction", ["human-robot", "human robot", "human-in-the-loop", "shared autonomy", "teleoperation"]],
-    ["Offline RL", ["offline reinforcement learning", "offline rl", "batch reinforcement", "conservative q-learning", "dataset"]],
-    ["RLHF / Preference", ["rlhf", "preference optimization", "preference learning", "human feedback", "reward model"]],
-    ["Policy Optimization", ["policy gradient", "actor-critic", "ppo", "sac", "policy optimization"]],
-    ["Planning & Control", ["planning", "mpc", "optimal control", "trajectory optimization", "model predictive control"]],
-    ["Multi-Agent RL", ["multi-agent", "multiagent", "multi agent", "coordination", "opponent"]],
-    ["Exploration", ["exploration", "intrinsic reward", "curiosity", "uncertainty"]],
-    ["Theory", ["regret", "sample complexity", "convergence", "bellman", "theory"]]
+    {
+      name: "LLM Training/Eval",
+      strong: ["llm", "large language model", "language model"],
+      weak: ["post-training", "post training", "grpo", "gspo", "dpo", "reasoning", "rollout", "alignment", "instruction following", "evaluation"]
+    },
+    {
+      name: "RLVR / Verifiable Rewards",
+      requiresAny: ["llm", "large language model", "language model", "reasoning"],
+      strong: ["rlvr", "verifiable reward", "verifiable rewards", "rule-based reward", "outcome reward"],
+      weak: ["ground-truth label", "pseudo-label", "reward computation", "verified"]
+    },
+    {
+      name: "Agentic RL",
+      strong: ["agentic", "tool-use", "tool use", "computer-use agent", "computer use agent", "web agent", "search agent"],
+      weak: ["environment", "task instruction", "browser", "web search"]
+    },
+    {
+      name: "World Models",
+      strong: ["world model", "world models", "world-modeling", "world modelling", "latent dynamics", "dynamics model", "dynamics models", "model-based reinforcement learning", "model-based rl", "dreamer"],
+      weak: ["latent representation", "future dynamics", "model predictive", "rollout"]
+    },
+    {
+      name: "Robot Learning",
+      strong: ["robot learning", "robot", "robots", "robotic", "robotics", "manipulation", "sim-to-real"],
+      weak: ["embodied", "morphology", "design trial", "control policy"]
+    },
+    {
+      name: "Exoskeletons",
+      strong: ["exoskeleton", "exoskeletons", "wearable robot", "wearable robots", "assistive robot", "prosthetic", "prosthetics", "orthosis", "gait assistance"],
+      weak: ["rehabilitation", "assistive", "human gait"]
+    },
+    {
+      name: "Locomotion",
+      strong: ["locomotion", "legged", "quadruped", "biped", "walking", "gait"],
+      weak: ["humanoid", "parkour", "whole-body", "terrain"]
+    },
+    {
+      name: "Human-Robot Interaction",
+      strong: ["human-robot", "human robot", "human-in-the-loop", "shared autonomy", "teleoperation"],
+      weak: ["human feedback", "operator", "collaboration"]
+    },
+    {
+      name: "Offline RL",
+      strong: ["offline reinforcement learning", "offline rl", "batch reinforcement", "conservative q-learning"],
+      weak: ["fixed dataset", "dataset", "trajectory stitching", "off-policy"]
+    },
+    {
+      name: "RLHF / Preference",
+      strong: ["rlhf", "preference optimization", "preference learning", "human feedback", "reward model"],
+      weak: ["alignment", "preference data", "chosen response", "rejected response"]
+    },
+    {
+      name: "Policy Optimization",
+      strong: ["policy gradient", "actor-critic", "ppo", "sac", "policy optimization"],
+      weak: ["advantage", "kl constraint", "entropy regularized", "trust region"]
+    },
+    {
+      name: "Planning & Control",
+      strong: ["planning", "mpc", "optimal control", "trajectory optimization", "model predictive control"],
+      weak: ["planner", "search", "control", "closed-loop"]
+    },
+    {
+      name: "Multi-Agent RL",
+      strong: ["multi-agent", "multiagent", "multi agent"],
+      weak: ["coordination", "opponent", "game", "collaborative"]
+    },
+    {
+      name: "Exploration",
+      strong: ["exploration", "intrinsic reward", "curiosity"],
+      weak: ["uncertainty", "sparse reward", "novelty"]
+    },
+    {
+      name: "Theory",
+      strong: ["regret", "sample complexity", "convergence", "bellman", "theory"],
+      weak: ["proof", "bound", "optimality gap", "polyak-lojasiewicz"]
+    }
   ];
 
   const hits = topics
-    .map(([topic, keywords]) => ({
-      topic,
-      score: topicHitScore(text, keywords)
-    }))
-    .filter((item) => item.score > 0)
+    .map((topic) => scoreTopic(text, topic))
+    .filter((item) => item.strongScore > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
     .map((item) => item.topic);
 
-  return hits.length ? hits : ["General RL"];
+  return hits.length ? hits : ["Uncategorized RL"];
 }
 
 function makeHighlight(paper) {

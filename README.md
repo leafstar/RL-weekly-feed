@@ -44,6 +44,12 @@ reinforcement learning, world model, model-based reinforcement learning, robot l
 dexterous manipulation, prosthetics, gait assistance, sim-to-real, embodied AI, preference optimization
 ```
 
+## 主题标签规则
+
+主题标签是基于论文标题和摘要的启发式分类。每个主题都有强触发词和弱触发词：只有命中强触发词才会打上对应标签，弱触发词只用于排序加分，避免 `dataset`、`environment` 这类泛词单独误触发主题。
+
+如果论文是强化学习相关，但没有命中当前 taxonomy 的强触发词，会显示为 `Uncategorized RL`。这表示“待细分”，不是说论文不重要。
+
 ## 每周工作流
 
 1. 每周一打开网页并刷新。
