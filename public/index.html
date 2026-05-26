@@ -48,7 +48,20 @@
         </label>
         <div class="keyword-control wide-control">
           <span>关键词</span>
-          <div id="keywordChips" class="keyword-chips" aria-label="关键词标签"></div>
+          <div class="keyword-section">
+            <div class="keyword-section-header">
+              <strong>当前检索</strong>
+              <small>用于标题 + 摘要</small>
+            </div>
+            <div id="activeKeywordChips" class="keyword-chips active-keyword-chips" aria-label="当前检索关键词"></div>
+          </div>
+          <div class="keyword-section">
+            <div class="keyword-section-header">
+              <strong>快速添加</strong>
+              <small>推荐关键词库</small>
+            </div>
+            <div id="suggestedKeywordChips" class="keyword-chips suggested-keyword-chips" aria-label="推荐关键词"></div>
+          </div>
           <div class="keyword-add-row">
             <input id="keywordInput" type="text" placeholder="添加关键词，如 dexterous manipulation">
             <button id="addKeywordButton" class="chip-add-button" type="button">添加</button>

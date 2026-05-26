@@ -236,15 +236,42 @@ label span,
 
 .keyword-control {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
+}
+
+.keyword-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.keyword-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--ink);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.keyword-section-header strong {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.keyword-section-header small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .keyword-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 44px;
+  min-height: 34px;
 }
 
 .keyword-chip,
@@ -270,16 +297,32 @@ label span,
   box-shadow: 3px 3px 0 0 var(--black);
 }
 
-.keyword-chip.selected {
+.keyword-chip.active {
   background: var(--secondary);
 }
 
-.keyword-chip.selected:nth-child(3n + 1) {
+.keyword-chip.active:nth-child(3n + 1) {
   background: var(--primary);
 }
 
-.keyword-chip.selected:nth-child(3n + 2) {
+.keyword-chip.active:nth-child(3n + 2) {
   background: #efeaff;
+}
+
+.keyword-chip.suggested {
+  min-height: 30px;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.keyword-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.keyword-chip:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .keyword-add-row {

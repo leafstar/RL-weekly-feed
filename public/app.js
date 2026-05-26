@@ -41,7 +41,8 @@ const els = {
   copyDigestButton: document.querySelector("#copyDigestButton"),
   daysSelect: document.querySelector("#daysSelect"),
   maxSelect: document.querySelector("#maxSelect"),
-  keywordChips: document.querySelector("#keywordChips"),
+  activeKeywordChips: document.querySelector("#activeKeywordChips"),
+  suggestedKeywordChips: document.querySelector("#suggestedKeywordChips"),
   keywordInput: document.querySelector("#keywordInput"),
   addKeywordButton: document.querySelector("#addKeywordButton"),
   topicSelect: document.querySelector("#topicSelect"),
@@ -80,28 +81,41 @@ function addKeyword(keyword) {
 }
 
 function renderKeywordChips() {
-  const knownKeywords = [...new Set([...keywordBank, ...state.selectedKeywords])];
-  els.keywordChips.innerHTML = "";
+  const activeKeywords = getSelectedKeywords();
+  const suggestedKeywords = keywordBank.filter((keyword) => !state.selectedKeywords.has(keyword));
+  els.activeKeywordChips.innerHTML = "";
+  els.suggestedKeywordChips.innerHTML = "";
 
-  for (const keyword of knownKeywords) {
-    const selected = state.selectedKeywords.has(keyword);
+  for (const keyword of activeKeywords) {
     const chip = document.createElement("button");
     chip.type = "button";
-    chip.className = `keyword-chip${selected ? " selected" : ""}`;
-    chip.setAttribute("aria-pressed", String(selected));
-    chip.textContent = keyword;
+    chip.className = "keyword-chip active";
+    chip.setAttribute("aria-label", `移除关键词 ${keyword}`);
+    chip.textContent = `${keyword} ×`;
+    chip.disabled = activeKeywords.length === 1;
     chip.addEventListener("click", () => {
-      if (state.selectedKeywords.has(keyword)) {
-        if (state.selectedKeywords.size === 1) return;
-        state.selectedKeywords.delete(keyword);
-      } else {
-        state.selectedKeywords.add(keyword);
-      }
+      if (state.selectedKeywords.size === 1) return;
+      state.selectedKeywords.delete(keyword);
       saveSelectedKeywords();
       renderKeywordChips();
       loadPapers();
     });
-    els.keywordChips.append(chip);
+    els.activeKeywordChips.append(chip);
+  }
+
+  for (const keyword of suggestedKeywords) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "keyword-chip suggested";
+    chip.setAttribute("aria-label", `添加关键词 ${keyword}`);
+    chip.textContent = `${keyword} +`;
+    chip.addEventListener("click", () => {
+      state.selectedKeywords.add(keyword);
+      saveSelectedKeywords();
+      renderKeywordChips();
+      loadPapers();
+    });
+    els.suggestedKeywordChips.append(chip);
   }
 }
 
