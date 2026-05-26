@@ -1,10 +1,12 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = join(__dirname, "public");
+const dataDir = join(__dirname, "data");
+const savedPapersPath = join(dataDir, "saved-papers.json");
 const port = Number.parseInt(process.env.PORT || "4173", 10);
 const host = process.env.HOST || "127.0.0.1";
 const cache = new Map();
@@ -49,6 +51,44 @@ function sendText(res, status, body, contentType = "text/plain; charset=utf-8") 
     "cache-control": "no-store"
   });
   res.end(body);
+}
+
+async function readJsonBody(req, limitBytes = 200_000) {
+  const chunks = [];
+  let size = 0;
+
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > limitBytes) {
+      const error = new Error("Request body is too large.");
+      error.status = 413;
+      throw error;
+    }
+    chunks.push(chunk);
+  }
+
+  const body = Buffer.concat(chunks).toString("utf8").trim();
+  return body ? JSON.parse(body) : {};
+}
+
+async function readSavedPaperIds() {
+  try {
+    const raw = await readFile(savedPapersPath, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed.savedPapers)
+      ? parsed.savedPapers.map(String).filter(Boolean)
+      : [];
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+async function writeSavedPaperIds(savedPapers) {
+  const ids = [...new Set((savedPapers || []).map(String).map((id) => id.trim()).filter(Boolean))].sort();
+  await mkdir(dataDir, { recursive: true });
+  await writeFile(savedPapersPath, `${JSON.stringify({ savedPapers: ids }, null, 2)}\n`, "utf8");
+  return ids;
 }
 
 function parseDate(value) {
@@ -738,6 +778,29 @@ async function serveStatic(req, res, pathname) {
 
 export const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
+  if (url.pathname === "/api/saved") {
+    try {
+      if (req.method === "GET") {
+        sendJson(res, 200, { savedPapers: await readSavedPaperIds() });
+        return;
+      }
+
+      if (req.method === "PUT") {
+        const body = await readJsonBody(req);
+        sendJson(res, 200, { savedPapers: await writeSavedPaperIds(body.savedPapers) });
+        return;
+      }
+
+      sendJson(res, 405, { error: "Method not allowed." });
+    } catch (error) {
+      sendJson(res, error.status || 500, {
+        error: "Could not update saved papers.",
+        detail: error.message
+      });
+    }
+    return;
+  }
 
   if (url.pathname === "/api/papers") {
     const days = Math.min(Math.max(Number.parseInt(url.searchParams.get("days") || "7", 10), 1), 60);

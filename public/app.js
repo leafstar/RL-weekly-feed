@@ -63,6 +63,33 @@ function saveSavedPapers() {
   localStorage.setItem("savedPapers", JSON.stringify([...state.saved]));
 }
 
+async function loadSavedPapers() {
+  try {
+    const response = await fetch("/api/saved");
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.detail || payload.error || "读取收藏失败");
+    const persisted = Array.isArray(payload.savedPapers) ? payload.savedPapers : [];
+    const local = JSON.parse(localStorage.getItem("savedPapers") || "[]");
+    state.saved = new Set([...persisted, ...local]);
+    saveSavedPapers();
+    if (local.length && !persisted.length) await persistSavedPapers();
+  } catch (error) {
+    console.warn("Could not load saved papers from local file.", error);
+  }
+}
+
+async function persistSavedPapers() {
+  const response = await fetch("/api/saved", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ savedPapers: [...state.saved] })
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.detail || payload.error || "保存收藏失败");
+  state.saved = new Set(payload.savedPapers || []);
+  saveSavedPapers();
+}
+
 function saveSelectedKeywords() {
   localStorage.setItem("selectedKeywords", JSON.stringify([...state.selectedKeywords]));
 }
@@ -302,7 +329,8 @@ function renderPapers() {
       topics.append(pill);
     }
 
-    node.querySelector(".save-button").addEventListener("click", () => {
+    node.querySelector(".save-button").addEventListener("click", async () => {
+      const wasSaved = state.saved.has(paper.id);
       if (state.saved.has(paper.id)) {
         state.saved.delete(paper.id);
       } else {
@@ -310,6 +338,20 @@ function renderPapers() {
       }
       saveSavedPapers();
       renderPapers();
+      try {
+        await persistSavedPapers();
+        renderPapers();
+      } catch (error) {
+        if (wasSaved) {
+          state.saved.add(paper.id);
+        } else {
+          state.saved.delete(paper.id);
+        }
+        saveSavedPapers();
+        renderPapers();
+        els.status.textContent = `保存收藏失败：${error.message}`;
+        els.status.className = "status visible error";
+      }
     });
 
     els.paperList.append(node);
@@ -404,4 +446,5 @@ els.savedOnlyButton.addEventListener("click", () => {
 });
 
 renderKeywordChips();
+await loadSavedPapers();
 loadPapers();

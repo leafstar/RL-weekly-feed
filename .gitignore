@@ -6,3 +6,4 @@ yarn-error.log*
 .env
 .env.*
 redesign-preview.png
+data/saved-papers.json
