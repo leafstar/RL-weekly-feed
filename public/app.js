@@ -279,7 +279,17 @@ function renderPapers() {
     node.querySelector(".score").textContent = `相关度 ${paper.score}`;
     node.querySelector(".title").textContent = paper.title;
     node.querySelector(".authors").textContent = paper.authors.slice(0, 8).join(", ") + (paper.authors.length > 8 ? " et al." : "");
-    node.querySelector(".highlight").textContent = paper.highlight;
+    const abstract = node.querySelector(".abstract");
+    const abstractToggle = node.querySelector(".abstract-toggle");
+    abstract.textContent = paper.summary?.replace(/\s+/g, " ").trim() || paper.highlight;
+    abstractToggle.setAttribute("aria-expanded", "false");
+    abstractToggle.setAttribute("aria-label", `展开完整摘要：${paper.title}`);
+    abstractToggle.addEventListener("click", () => {
+      const expanded = node.classList.toggle("abstract-expanded");
+      abstractToggle.textContent = expanded ? "收起摘要" : "展开摘要";
+      abstractToggle.setAttribute("aria-expanded", String(expanded));
+      abstractToggle.setAttribute("aria-label", `${expanded ? "收起" : "展开"}完整摘要：${paper.title}`);
+    });
     node.querySelector(".abs-link").href = paper.absUrl;
     node.querySelector(".pdf-link").href = paper.pdfUrl;
     node.querySelector(".save-button").textContent = isSaved ? "★ 已收藏" : "☆ 收藏";
