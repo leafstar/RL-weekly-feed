@@ -9,6 +9,10 @@ Audience is an **RL theory researcher hunting project directions**: papers repor
 
 Run everything from the project root: `/Users/muxingwang/Documents/Codex/2026-05-25/arxiv-app`. Set `MONTH=YYYY-MM` (the month being produced).
 
+**Environment fallback (no `node`):** if `node` isn't on PATH in this session (common when Claude runs the skill directly), don't block —
+- Step 1 (fetch): instead of `node fetch-candidates.mjs`, hit the same query against `https://export.arxiv.org/api/query` in the browser (or WebFetch) and parse the feed in-session. The query is defined in `fetch-candidates.mjs` (phenomenon-signal terms + RL cats).
+- Step 7 (render): instead of `node brief-render.mjs`, produce `$MONTH.html` by replacing the `<script type="application/json" id="brief-data">…</script>` block in `brief.template.html` with `$MONTH.json` (do it with `python3` or write the file directly), then refresh `index.html` to list all `data/briefs/*.html`. (`python3` is available even when `node` is not.)
+
 ## Steps
 
 1. **Fetch candidates** (deterministic, no LLM):
