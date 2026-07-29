@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RL 简报 · 2026-07</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg:#fff8f7; --panel:#ffffff; --panel-soft:#fff0ef; --panel-tint:#ffe9e7;
+    --ink:#251818; --muted:#584140; --line:#201615;
+    --primary:#ff6b6b; --primary-dark:#ae2f34; --secondary:#b1eeed; --secondary-dark:#2a6767;
+    --tertiary:#9897c5; --yellow:#f2d95c;
+    --shadow:6px 6px 0 0 var(--line); --shadow-sm:4px 4px 0 0 var(--line);
+    --border:4px solid var(--line); --border-thin:2px solid var(--line);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:17px;
+    font-family:"Archivo Narrow","Arial Narrow",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+  a{color:var(--primary-dark);text-decoration:none} a:hover{text-decoration:underline}
+  header.top{padding:26px clamp(16px,4vw,44px) 22px;border-bottom:6px solid var(--line);background:var(--panel);}
+  header.top h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(28px,4vw,50px);line-height:1.02}
+  header.top .sub{margin:8px 0 0;color:var(--muted);font-size:16px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 clamp(14px,3vw,28px)}
+  details.notes{margin:18px auto;max-width:1040px;border:var(--border-thin);background:var(--panel-soft);box-shadow:var(--shadow-sm)}
+  details.notes summary{cursor:pointer;padding:12px 16px;font-weight:700}
+  details.notes .body{padding:4px 16px 14px;color:var(--muted);font-size:15px;line-height:1.55}
+  .controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:var(--border);
+    padding:12px clamp(14px,3vw,28px);display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
+  .cgroup{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .clab{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  .chip{border:var(--border-thin);background:var(--panel);padding:5px 11px;cursor:pointer;font-size:14px;
+    box-shadow:2px 2px 0 0 var(--line)}
+  .chip[aria-pressed="true"]{background:var(--primary);color:#fff;box-shadow:none;transform:translate(2px,2px)}
+  .controls input[type=search]{border:var(--border-thin);padding:6px 10px;min-width:160px;background:var(--panel)}
+  main{padding:26px clamp(14px,3vw,28px) 80px}
+  .sec{max-width:1040px;margin:0 auto 40px}
+  .sec-h{font-family:Georgia,serif;font-weight:900;font-size:26px;margin:0 0 4px;
+    display:inline-block;border-bottom:8px solid var(--primary);padding-bottom:2px}
+  .sec-tag{color:var(--muted);font-size:15px;margin:6px 0 18px}
+  .subh{font-weight:800;font-size:18px;margin:26px 0 12px;color:var(--primary-dark);
+    text-transform:uppercase;letter-spacing:.04em}
+  .card{border:var(--border);background:var(--panel);box-shadow:var(--shadow);padding:16px 18px;margin:0 0 18px}
+  .card:hover{transform:translate(-1px,-1px);box-shadow:7px 7px 0 0 var(--line)}
+  .card .hd{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:4px}
+  .rank{flex:none;width:30px;height:30px;display:grid;place-items:center;background:var(--ink);color:#fff;font-weight:800;border-radius:2px}
+  .ttl{font-weight:800;font-size:19px;line-height:1.2;flex:1;min-width:220px}
+  .authors{color:var(--muted);font-size:14px;margin:2px 0 10px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 0}
+  .badge{font-size:12px;font-weight:700;border:var(--border-thin);padding:2px 8px;border-radius:2px;white-space:nowrap}
+  .b-main{background:var(--primary);color:#fff} .b-ws{background:var(--tertiary);color:#fff} .b-pre{background:var(--panel-tint)}
+  .b-open{background:var(--primary);color:#fff} .b-partial{background:var(--yellow)} .b-filled{background:var(--secondary);color:var(--secondary-dark)}
+  .fields{display:grid;gap:7px;margin-top:6px}
+  .f{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:15.5px;line-height:1.5}
+  .f .k{font-weight:800;color:var(--primary-dark)}
+  .topics{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap}
+  .topic{font-size:12px;color:var(--muted);border:var(--border-thin);padding:1px 7px;border-radius:999px}
+  .tgroup{margin:0 0 16px}
+  .tgroup h4{margin:0 0 8px;font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--secondary-dark)}
+  .titem{border-left:6px solid var(--line);background:var(--panel);padding:8px 12px;margin:0 0 8px;box-shadow:var(--shadow-sm)}
+  .titem .star{color:var(--primary-dark);font-weight:900;margin-right:4px}
+  .titem .note{color:var(--muted);font-size:14.5px}
+  .blitem{display:flex;gap:10px;align-items:baseline;border:var(--border-thin);background:var(--panel);padding:9px 12px;margin:0 0 9px}
+  .empty{color:var(--muted);font-style:italic;padding:8px 2px}
+  footer{max-width:1040px;margin:0 auto;padding:20px clamp(14px,3vw,28px) 60px;color:var(--muted);font-size:13px;border-top:var(--border-thin)}
+  @media (max-width:560px){ .f{grid-template-columns:1fr} .f .k{margin-bottom:-4px} }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 id="doc-title">RL 简报 · 2026-07</h1>
+  <p class="sub" id="doc-sub"></p>
+</header>
+
+<div class="wrap">
+  <details class="notes">
+    <summary>方法 / 口径说明</summary>
+    <div class="body" id="notes-body"></div>
+  </details>
+</div>
+
+<div class="controls">
+  <div class="cgroup"><span class="clab">区</span><span id="f-section"></span></div>
+  <div class="cgroup"><span class="clab">来源</span><span id="f-venue"></span></div>
+  <div class="cgroup"><span class="clab">理论现状</span><span id="f-status"></span></div>
+  <div class="cgroup"><span class="clab">搜索</span><input id="f-q" type="search" placeholder="标题 / 现象…" /></div>
+</div>
+
+<main id="app"></main>
+<footer id="foot"></footer>
+
+<script type="application/json" id="brief-data">
+{
+  "month": "2026-07",
+  "title": "RL 简报 · 2026-07",
+  "generatedAt": "2026-07-29",
+  "sub": "实验现象优先 · 找理论 project 方向 · 主体 9 篇 / 理论前沿 10 篇 / backlog 5",
+  "notes": [
+    "给谁用：做 RL 理论、想从实验现象里找 project 方向的人。I 区=你要找的\"问题\"（稳健、反直觉、还没理论的实验现象，即 Wang 2025→Labbi 2026 里的 Wang 位置）；II 区=\"别人做到哪了\"（理论前沿，按工具分组）；III 区=历史开放现象 backlog。",
+    "来源：arXiv cs.LG/cs.AI/stat.ML，用\"现象信号\"词（rethinking / revisiting / surprising / counterintuitive / paradox / phenomenon / illusion / pitfall …）召回，2025-11 ~ 2026-07；venue 软加分不硬筛。",
+    "理论现状靠前向引用判（OpenAlex 现场 / 正式版 Semantic Scholar + key），不靠模型记忆；2026 新论文引用太稀疏 → 默认\"暂空，待核\"，这道核查真正发力在 III。",
+    "口味偏差：\"现象信号\"召回天然偏 LLM-RL；已特意塞入经典 RL（A1 搜索 / B2 可塑性 / B3 mixture policy）。想更偏经典 RL 或某子领域，调召回词即可。"
+  ],
+  "sectionI": {
+    "A": [
+      {
+        "title": "The Surprising Difficulty of Search in Model-Based RL",
+        "id": "2601.21306", "authors": "Chang, Henaff, Amos & Dudek", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "topics": ["Model-Based RL","Search/Planning","Value Overestimation"],
+        "phenomenon": "即使世界模型高度准确，加 search 也会损害性能；真正瓶颈不是模型/值函数精度，而是 overestimation bias；对 value ensemble 取 min 即可修好并达 SOTA。",
+        "why": "直接反\"compounding error 是 MBRL 主障碍\"的公论，给了干净因果（bias > accuracy）+ 可复现修法。经典 RL，不是 LLM。",
+        "theory": "暂空（待核）。缺\"有限模型误差下 search 的 argmax 如何放大 value 高估\"的形式刻画。",
+        "entry": "把 planning 的 max 算子当高估放大器，用 order-statistics / ensemble-min 刻画 bias，推\"何时 search 反劣于 policy\"的临界模型精度。"
+      },
+      {
+        "title": "Spurious Rewards Paradox: How RLVR Activates Memorization Shortcuts",
+        "id": "2601.11061", "authors": "Yan et al.", "venue": "ICML 2026", "venueClass": "main", "status": "partial",
+        "topics": ["RLVR","Mechanistic","Reward Misspecification"],
+        "phenomenon": "用虚假/错误奖励做 RLVR，Qwen2.5 仍显著涨分；机制是中层 Anchor 触发记忆检索 + 后层 Adapter 改造表示的电路，可双向因果操控。",
+        "why": "反\"RL 涨分=学到推理\"（这里是激活记忆捷径）；有电路级机制证据。姊妹作 Exploration vs Exploitation (ICLR 2026, 2512.16912) 归因到 clipping bias 压熵。",
+        "theory": "半空。有机制，缺\"为何 clipping/熵动力学让虚假奖励也涨分\"的可证模型。",
+        "entry": "把 clipping bias 写进 policy-gradient 的熵动力学，给\"奖励与真值无关仍升\"的条件（记忆污染 vs 真推理）。"
+      },
+      {
+        "title": "The Unlearnability Phenomenon in RLVR",
+        "id": "2605.16787", "authors": "Chen, He & Zhao", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "topics": ["RLVR","Gradient Geometry","Learnability"],
+        "phenomenon": "一部分 hard example 即使采到正确 rollout（有正奖励）也学不会；加采样/换优化器无效；病根是它们与其余样本的跨样本梯度相似度低、推理模式不可泛化。",
+        "why": "反\"有正奖励就能学上去\"；首次系统刻画。",
+        "theory": "暂空（待核）。无 learnability 的表示层判据/界。",
+        "entry": "用 NTK / 梯度对齐度定义可学性，证\"低梯度对齐 ⇒ RLVR 不可学\"，给训练前预测量。"
+      },
+      {
+        "title": "The Quality-Utility Paradox: Why High-Reward Data Impairs Small Model Reasoning",
+        "id": "2606.16152", "authors": "Qian, Yang, Ma et al.", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "topics": ["Distillation","Reward Modeling","Distribution Shift"],
+        "phenomenon": "更强模型精修的高 reward 数据，蒸馏小模型反而更差；小模型自采的低分数据更有用（跨 Qwen2.5 / LLaMA-3 / DeepSeek）。",
+        "why": "反\"高 reward = 好监督\"；跨 3 族复现 → 稳。只有 distributional-drift 启发式。",
+        "theory": "暂空（待核）。缺\"监督价值 = 质量 − 师生分布不兼容成本\"的可证刻画。",
+        "entry": "utility = 质量项 − 师生推理分布散度项，预测最优 trace 为\"高分且低 drift\"，给 Oracle 精修反而有害的判据。"
+      }
+    ],
+    "B": [
+      {
+        "title": "Aligning to Illusions: Choice Blindness in Human and AI Feedback",
+        "id": "2603.08412", "authors": "Wu", "venue": "预印本", "venueClass": "pre", "status": "open",
+        "topics": ["RLHF","Preference Elicitation","Measurement Error"],
+        "phenomenon": "RLHF 假设\"标注偏好=稳定内部状态\"。实验：偷换偏好 91% 不被察觉；LLM judge 靠浅层匹配（去掉前文 reasoning 后盲选率 ~0→>50%）；腐蚀 1/6–1/3 标签才让奖励信号减半，但 pairwise 准确率几乎不动；50% 腐蚀时 Best-of-N 等于随机而 proxy 分数还在涨。",
+        "why": "直击 RLHF 地基（偏好信号由 elicitation context 塑造，人/模型/指标都测不出）；多实验、跨架构。",
+        "theory": "暂空（待核）。",
+        "entry": "把偏好当\"elicitation-context 相关的测量误差过程\"，推\"何种腐蚀结构下奖励信号与真偏好脱钩但指标无感\"。"
+      },
+      {
+        "title": "Rethinking Plasticity in Deep RL",
+        "id": "2603.21173", "authors": "He", "venue": "预印本", "venueClass": "pre", "status": "partial",
+        "topics": ["Plasticity Loss","Optimization Landscape","Continual RL"],
+        "phenomenon": "提出 Optimization-Centric 假设：旧任务最优点成为新任务坏局部极小、困住参数；理论上把 dormant neuron 等价于零梯度态；可塑性丢失高度任务特定（高 dormancy 网络切到很不同的任务能追平随机初始化 → 容量还在，被 landscape 抑制）。",
+        "why": "经典 RL 老大难，且这篇今年已在往理论走（见 III，正在被填的活例）。",
+        "theory": "半空（有 OCP 假设 + 零梯度等价，缺完整动力学理论）。",
+        "entry": "任务切换建成参数落入旧吸引域，刻画\"何时旧极小=新任务坏极小\"，给参数约束缓解可塑性丢失的可证条件。"
+      },
+      {
+        "title": "Revisiting Mixture Policies in Entropy-Regularized Actor-Critic",
+        "id": "2605.09157", "authors": "He, Neumann, Mei & White", "venue": "预印本", "venueClass": "pre", "status": "partial",
+        "topics": ["Actor-Critic","Gradient Variance","Policy Class"],
+        "phenomenon": "理论上更灵活的 mixture policy 在实践几乎没优势、被主流算法（SAC）弃用；根因是缺低方差 reparameterization（Gaussian 独享）；提出 MRP 估计器，证其方差低于 likelihood-ratio，实验才追平/偶超 Gaussian。",
+        "why": "反\"表达力更强就更好\"；把\"理论优势为何不兑现\"定位到梯度估计方差，干净。",
+        "theory": "半空（方差比较已证，缺\"表达力→性能\"何时兑现的一般理论）。",
+        "entry": "刻画 policy 表达力、梯度估计方差、熵正则三者权衡，给 mixture 优于 unimodal 的可证条件。"
+      },
+      {
+        "title": "Similar Models Learn Differently: Final-Window Pretraining Shapes Post-Training",
+        "id": "2607.25063", "authors": "Lu, Tang & Cavallaro", "venue": "预印本", "venueClass": "pre", "status": "open",
+        "topics": ["Pretraining Data","Post-Training","Loss Landscape"],
+        "phenomenon": "只在预训练最后 500M token（0.1–1%）数据源上不同的 6 分支，SFT 后基准近乎一致，但同样的 DPO / 可验证奖励 RL 把它们带到差异极大的终点；\"安全文本必须放最后\"才有效，跨 2 个模型族复现。",
+        "why": "受控单变量、跨族复现 → 消融干净；反\"SFT 后基准等价即可互换\"。",
+        "theory": "暂空（待核）。",
+        "entry": "\"最后窗口\"→ 初始化落入不同吸引域/曲率区，用 post-training 更新在这些区域的稳定性差异解释终点分化；找 landscape 曲率类可测代理。"
+      },
+      {
+        "title": "Pessimism's Paradox: Conservative Offline Training Amplifies Reward Hacking",
+        "id": "2606.30627", "authors": "Sahoo et al.", "venue": "ICML 2026 Workshop", "venueClass": "ws", "status": "open",
+        "topics": ["Offline RL","Reward Hacking","Exploration Entropy"],
+        "phenomenon": "离线训练越保守，online 适应时 reward hacking 越严重（Goodhart gap 随保守度单调，ρ=1.0）；链：高 β 压熵 → 低多样性 → ensemble epistemic 分歧反升且更快被利用。",
+        "why": "反\"保守=安全\"核心直觉，ρ=1.0 极干净。但单模型（Qwen3-14B）、workshop 规模 → 需更大规模确认。",
+        "theory": "暂空（待核）。",
+        "entry": "把\"保守度 β → 策略熵 → RM 训练分布覆盖/epistemic → 被利用速度\"写成可证 reward-hacking 上界，求最优 β*。"
+      }
+    ],
+    "alsoScanned": [
+      {"title": "What do Reward Models Memorize?", "id": "2607.24484", "note": "RM 记捷径（model identity/length）非偏好质量"},
+      {"title": "Why Model Uncertainty Fails as a Risk Signal in MBRL", "id": "2607.16591", "note": "模型不确定性 ⟂ 真实风险 (r<0.15)，ICML WS"},
+      {"title": "Action from Adjacent Set > Best Prediction in World Models", "id": "2607.23602", "note": "world model argmin 选择偏差，池越大越糟"},
+      {"title": "The Safety Paradox", "id": "2606.05614", "note": "增强安全意识反而制造漏洞"},
+      {"title": "Rethinking Generalization in Reasoning SFT", "id": "2604.06628", "note": "挑战\"SFT 记忆 / RL 泛化\"叙事"}
+    ]
+  },
+  "sectionII": [
+    {
+      "group": "随机逼近 / 收敛性",
+      "items": [
+        {"title": "Two-Timescale Markovian SA Convergence", "id": "2605.31172", "venue": "ICML 2026", "note": "去 i.i.d./投影/紧致假设，首证 off-policy 线性近似 + eligibility traces 的 TDC 几乎必然收敛。"},
+        {"title": "From Ticks to Flows", "id": "2606.04275", "venue": "ICLR 2026", "note": "连续时间 + 无限宽两层网，首次写出 actor-critic 状态分布演化的 SDE。"},
+        {"title": "Demystifying the Effectiveness of Online Alignment", "id": "2604.17207", "venue": "预印本", "star": true, "note": "证 greedy online RLHF/DPO 在 temperature-zero regret 下是 $O(1)$（解释为何实测远好于悲观的 $O(\\log T)$）。"}
+      ]
+    },
+    {
+      "group": "样本复杂度 / bandit",
+      "items": [
+        {"title": "Breaking the Total Variance Barrier", "id": "2607.23679", "venue": "ICML 2026", "note": "异方差线性 bandit 的 sharp sample complexity 是 harmonic-mean 依赖（非 $\\sqrt{\\Lambda}$）+ 匹配下界。"},
+        {"title": "Linear Contextual Bandits with Rare Parameter Updates", "id": "2606.00984", "venue": "ICML 2026", "note": "有限自适应（limited adaptivity）下的最优算法。"}
+      ]
+    },
+    {
+      "group": "方差 & policy-gradient 分析",
+      "items": [
+        {"title": "On the Impossibility of Unbiased & Length-Invariant PO", "id": "2607.23364", "venue": "ICML 2026", "star": true, "note": "不可能性定理：outcome reward 下\"梯度无偏\"与\"长度不变\"不可兼得（GRPO vs Dr.GRPO 是两端）。"},
+        {"title": "Demystifying GRPO: Its Policy Gradient is a U-Statistic", "id": "2603.01162", "venue": "预印本", "note": "把 GRPO 梯度重写成 U-statistic（方差分析抓手）。"}
+      ]
+    },
+    {
+      "group": "offline / OPE",
+      "items": [
+        {"title": "OPE with Rewards Missing Not at Random", "id": "2606.20206", "venue": "ICML 2026", "note": "奖励 MNAR 破坏 ignorability 时，用 future state 作 shadow variable + bridge function 建立可识别性。"}
+      ]
+    },
+    {
+      "group": "博弈 / 分布式 / 其他工具",
+      "items": [
+        {"title": "Bilevel Optimization over Saddle Points of Zero-Sum Markov Games", "id": "2605.26654", "venue": "ICML 2026", "note": "零和马尔可夫博弈鞍点上的双层优化。"},
+        {"title": "Exact Unlearning in RL", "id": "2606.04182", "venue": "ICML Spotlight", "note": "$\\rho$-TV-stable，遗忘代价仅重训的 $\\sqrt{\\ln T}$ 量级。"},
+        {"title": "A Spectral Revisit of the Distributional Bellman Operator (Cramér)", "id": "2603.12576", "venue": "预印本", "note": "分布式 RL 算子的谱视角。"}
+      ]
+    }
+  ],
+  "sectionIII": [
+    {"name": "Plasticity loss / dormant neurons", "status": "partial", "note": "训练中丧失学习能力。状态更新中——B2（Rethinking Plasticity, 2603.21173）是今年往理论走的尝试 → 从\"空\"变\"半空\"。"},
+    {"name": "Spurious rewards 也能提升 RLVR", "status": "partial", "note": "错误奖励涨分。正在被填——A2 / Exploration vs Exploitation (2512.16912) 给了机制解释 → 半占。"},
+    {"name": "Primacy bias in deep RL (Nikishin 2022)", "status": "open", "note": "早期经验过拟合、重置有效。OpenAlex 现场查 14 篇被引未见系统理论（覆盖仅 14/实际数百）→ 疑似空，待复核。"},
+    {"name": "Replay ratio / update-to-data 反常 scaling", "status": "open", "note": "高 replay ratio 为何反而有效，机制有争议 → 待核。"},
+    {"name": "Reward-model overoptimization (Goodhart) scaling 曲线", "status": "open", "note": "经验规律清楚，形式理论有限 → 待核。"}
+  ]
+}
+</script>
+
+<script>
+(function(){
+  var DATA = JSON.parse(document.getElementById("brief-data").textContent);
+  var ABS = function(id){ return "https://arxiv.org/abs/" + id; };
+  var VENUE = {main:{cls:"b-main",label:"主会"}, ws:{cls:"b-ws",label:"Workshop"}, pre:{cls:"b-pre",label:"预印本"}};
+  var STATUS = {open:{cls:"b-open",label:"理论空白"}, partial:{cls:"b-partial",label:"半空"}, filled:{cls:"b-filled",label:"已被填/占"}};
+
+  document.getElementById("doc-title").textContent = DATA.title;
+  document.getElementById("doc-sub").textContent = DATA.sub || "";
+  document.getElementById("notes-body").innerHTML = DATA.notes.map(function(n){return "<p>"+n+"</p>";}).join("");
+  document.getElementById("foot").textContent = "生成于 " + DATA.generatedAt + " · arXiv 数据经人工/模型策划 · 公式由 KaTeX 渲染（需联网）";
+
+  var state = {section:"all", venue:"all", status:"all", q:""};
+
+  function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function link(t,id){ return '<a href="'+ABS(id)+'" target="_blank" rel="noreferrer">'+esc(t)+'</a>'; }
+
+  function entryCard(e, i){
+    var v = VENUE[e.venueClass]||VENUE.pre, s = STATUS[e.status]||STATUS.open;
+    var fields = [["现象",e.phenomenon],["值得建模",e.why],["理论现状",e.theory],["切入点",e.entry]]
+      .map(function(f){ return '<div class="f"><span class="k">'+f[0]+'</span><span>'+esc(f[1])+'</span></div>'; }).join("");
+    var topics = (e.topics||[]).map(function(t){return '<span class="topic">'+esc(t)+'</span>';}).join("");
+    return '<article class="card" data-venue="'+e.venueClass+'" data-status="'+e.status+'" data-text="'+esc((e.title+" "+e.phenomenon).toLowerCase())+'">'
+      + '<div class="hd"><span class="rank">'+(i+1)+'</span><span class="ttl">'+link(e.title,e.id)+'</span></div>'
+      + '<div class="badges"><span class="badge '+v.cls+'">'+v.label+' · '+esc(e.venue)+'</span><span class="badge '+s.cls+'">'+s.label+'</span></div>'
+      + '<div class="authors">'+esc(e.authors)+'</div>'
+      + '<div class="fields">'+fields+'</div>'
+      + (topics?'<div class="topics">'+topics+'</div>':'')
+      + '</article>';
+  }
+
+  function render(){
+    var html = "";
+    // Section I
+    var showI = state.section==="all"||state.section==="I";
+    if(showI){
+      html += '<section class="sec" data-sec="I"><h2 class="sec-h">I. 实验现象 → 候选方向</h2>'
+        + '<div class="sec-tag">你要找的"问题"：稳健、反直觉、还没理论的实验现象</div>';
+      var order = 0;
+      html += '<div class="subh">A · 顶会主会</div>';
+      var aCards = DATA.sectionI.A.map(function(e){return entryCard(e, order++);}).join("");
+      html += aCards || '<div class="empty">（无）</div>';
+      html += '<div class="subh">B · Workshop / 预印本（质量软加分）</div>';
+      var bCards = DATA.sectionI.B.map(function(e){return entryCard(e, order++);}).join("");
+      html += bCards || '<div class="empty">（无）</div>';
+      html += '<div class="subh" style="color:var(--muted)">本月还扫到（同类现象，未展开）</div><div class="fields">'
+        + DATA.sectionI.alsoScanned.map(function(a){return '<div class="f" data-venue="all" data-status="all" data-text="'+esc(a.title.toLowerCase())+'"><span class="k">·</span><span>'+link(a.title,a.id)+' — '+esc(a.note)+'</span></div>';}).join("")
+        + '</div>';
+      html += '</section>';
+    }
+    // Section II
+    if(state.section==="all"||state.section==="II"){
+      html += '<section class="sec" data-sec="II"><h2 class="sec-h">II. 理论前沿</h2>'
+        + '<div class="sec-tag">别人做到哪了（按工具分组，★ = 直接针对某实验现象/算法，可能已把方向填掉）</div>';
+      html += DATA.sectionII.map(function(g){
+        return '<div class="tgroup"><h4>'+esc(g.group)+'</h4>'
+          + g.items.map(function(it){
+              return '<div class="titem" data-text="'+esc((it.title+" "+it.note).toLowerCase())+'">'
+                + (it.star?'<span class="star">★</span>':'')
+                + link(it.title,it.id)+' <span class="badge b-pre">'+esc(it.venue)+'</span>'
+                + '<div class="note">'+esc(it.note)+'</div></div>';
+            }).join("")
+          + '</div>';
+      }).join("");
+      html += '</section>';
+    }
+    // Section III
+    if(state.section==="all"||state.section==="III"){
+      html += '<section class="sec" data-sec="III"><h2 class="sec-h">III. 历史开放现象 backlog</h2>'
+        + '<div class="sec-tag">候选方向库（种子）· 每条"空不空"须 Semantic Scholar + key 前向引用复核</div>';
+      html += DATA.sectionIII.map(function(b){
+        var s = STATUS[b.status]||STATUS.open;
+        return '<div class="blitem" data-text="'+esc((b.name+" "+b.note).toLowerCase())+'"><span class="badge '+s.cls+'">'+s.label+'</span>'
+          + '<span><strong>'+esc(b.name)+'</strong> — '+esc(b.note)+'</span></div>';
+      }).join("");
+      html += '</section>';
+    }
+    document.getElementById("app").innerHTML = html;
+    applyFilters();
+    if(window.renderMathInElement){
+      renderMathInElement(document.getElementById("app"),{delimiters:[{left:"$",right:"$",display:false}],throwOnError:false});
+    }
+  }
+
+  function applyFilters(){
+    var q = state.q.trim().toLowerCase();
+    document.querySelectorAll('#app .card').forEach(function(el){
+      var ok = (state.venue==="all"||el.dataset.venue===state.venue)
+            && (state.status==="all"||el.dataset.status===state.status)
+            && (!q || (el.dataset.text||"").indexOf(q)>=0);
+      el.style.display = ok?"":"none";
+    });
+    // text search also filters II/III/alsoScanned rows
+    document.querySelectorAll('#app .titem, #app .blitem, #app .f[data-text]').forEach(function(el){
+      var ok = (!q || (el.dataset.text||"").indexOf(q)>=0);
+      el.style.display = ok?"":"none";
+    });
+  }
+
+  function chipRow(container, opts, key){
+    var box = document.getElementById(container);
+    box.innerHTML = "";
+    opts.forEach(function(o){
+      var b = document.createElement("button");
+      b.className = "chip"; b.textContent = o.label; b.setAttribute("aria-pressed", state[key]===o.val);
+      b.addEventListener("click", function(){
+        state[key]=o.val;
+        [].forEach.call(box.children,function(c){c.setAttribute("aria-pressed", c===b);});
+        if(key==="section") render(); else applyFilters();
+      });
+      box.appendChild(b);
+    });
+  }
+  chipRow("f-section",[{val:"all",label:"全部"},{val:"I",label:"I 实验现象"},{val:"II",label:"II 理论前沿"},{val:"III",label:"III backlog"}],"section");
+  chipRow("f-venue",[{val:"all",label:"全部"},{val:"main",label:"主会"},{val:"ws",label:"Workshop"},{val:"pre",label:"预印本"}],"venue");
+  chipRow("f-status",[{val:"all",label:"全部"},{val:"open",label:"空白"},{val:"partial",label:"半空"},{val:"filled",label:"已填"}],"status");
+  document.getElementById("f-q").addEventListener("input", function(e){ state.q=e.target.value; applyFilters(); });
+
+  render();
+  // KaTeX's CDN scripts are deferred, so they load after this inline script runs.
+  // Re-typeset once they're ready (render()'s own guarded call handles later re-renders).
+  window.addEventListener("load", function(){
+    if(window.renderMathInElement){
+      renderMathInElement(document.getElementById("app"),{delimiters:[{left:"$",right:"$",display:false}],throwOnError:false});
+    }
+  });
+})();
+</script>
+</body>
+</html>
