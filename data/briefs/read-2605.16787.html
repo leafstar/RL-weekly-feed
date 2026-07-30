@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>精读骨架</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg:#fff8f7; --panel:#ffffff; --panel-soft:#fff0ef; --panel-tint:#ffe9e7;
+    --ink:#251818; --muted:#584140; --line:#201615;
+    --primary:#ff6b6b; --primary-dark:#ae2f34; --secondary:#b1eeed; --secondary-dark:#2a6767;
+    --tertiary:#9897c5; --yellow:#f2d95c;
+    --shadow:6px 6px 0 0 var(--line); --shadow-sm:4px 4px 0 0 var(--line);
+    --border:4px solid var(--line); --border-thin:2px solid var(--line);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:17px;
+    font-family:"Archivo Narrow","Arial Narrow",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+  a{color:var(--primary-dark);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 clamp(14px,3vw,28px)}
+  header.top{padding:24px clamp(16px,4vw,44px) 20px;border-bottom:6px solid var(--line);background:var(--panel)}
+  .back{font-size:14px;color:var(--muted)}
+  header.top h1{margin:6px 0 2px;font-family:Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(24px,3.4vw,38px);line-height:1.06}
+  .meta{color:var(--muted);font-size:15px;margin:6px 0 0}
+  .srclinks a{display:inline-block;margin:8px 8px 0 0;border:var(--border-thin);padding:3px 10px;box-shadow:2px 2px 0 0 var(--line);font-size:14px;background:var(--panel)}
+  .hook{max-width:1000px;margin:18px auto 0;padding:12px 16px;border:var(--border-thin);background:var(--panel-tint);box-shadow:var(--shadow-sm);font-weight:700}
+  .howto{max-width:1000px;margin:14px auto 0;padding:10px 16px;border-left:6px solid var(--tertiary);background:var(--panel-soft);color:var(--muted);font-size:14.5px;line-height:1.55}
+  main{padding:8px clamp(14px,3vw,28px) 80px}
+  .blk{max-width:1000px;margin:26px auto 0}
+  .blk h3{font-family:Georgia,serif;font-weight:900;font-size:21px;margin:0 0 10px;display:inline-block;border-bottom:6px solid var(--primary);padding-bottom:2px}
+  .node{border:var(--border);background:var(--panel);box-shadow:var(--shadow);padding:12px 15px;margin:0 0 14px}
+  .node:hover{transform:translate(-1px,-1px);box-shadow:7px 7px 0 0 var(--line)}
+  .claim{font-size:16.5px;line-height:1.5}
+  .claim b{color:var(--primary-dark)}
+  .ptr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px;padding-top:8px;border-top:1px dashed var(--line)}
+  .loc{font-size:12.5px;font-weight:800;border:var(--border-thin);padding:2px 8px;border-radius:2px;background:var(--panel-tint);white-space:nowrap}
+  .src{font-size:13px;font-weight:800;border:var(--border-thin);padding:2px 9px;box-shadow:2px 2px 0 0 var(--line);background:var(--yellow);color:var(--ink)}
+  .src:hover{background:var(--primary);color:#fff;text-decoration:none}
+  .kw{font-size:12.5px;color:var(--muted)}
+  .kw code{background:var(--panel-soft);border:1px solid var(--line);padding:0 5px;border-radius:2px}
+  .mine{border-left:6px solid var(--secondary-dark);background:var(--panel-soft)}
+  .mine .tag{font-size:11px;font-weight:800;color:var(--secondary-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  footer{max-width:1000px;margin:0 auto;padding:18px clamp(14px,3vw,28px) 60px;color:var(--muted);font-size:13px;border-top:var(--border-thin)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="back"><a id="r-back" href="./index.html">← 返回简报</a></div>
+    <h1 id="r-title">精读骨架</h1>
+    <p class="meta" id="r-meta"></p>
+    <div class="srclinks" id="r-srclinks"></div>
+  </div>
+</header>
+
+<div class="hook" id="r-hook"></div>
+<div class="howto">怎么对照：每个骨架点下方 <span class="src">→原文</span> 会跳到来源的<b>对应章节/图表</b>（有 arXiv HTML 时精确到节；否则跳 PDF 页）；<code>搜:</code> 后是可在 PDF/HTML 里 Ctrl-F 的短关键词。骨架是模型精读所得——先扫骨架，存疑处点 →原文 核对，结论以原文为准。</div>
+
+<main id="r-main"></main>
+<footer>骨架为模型精读所得，可能有误；每点的「→原文」即为回原文的核对入口。公式由 KaTeX 渲染（需联网）。</footer>
+
+<script type="application/json" id="read-data">
+{
+  "id": "2605.16787",
+  "title": "The Unlearnability Phenomenon in RLVR",
+  "authors": "Chen, He & Zhao",
+  "venue": "ICML 2026",
+  "briefMonth": "2026-07",
+  "srcAbs": "https://arxiv.org/abs/2605.16787",
+  "srcPdf": "https://arxiv.org/pdf/2605.16787",
+  "srcHtml": "https://arxiv.org/html/2605.16787",
+  "hook": "一句话：RLVR 里有一批 hard example，<b>即使采到正确 rollout（有正奖励可学）也学不会</b>；作者逐一排除常见解释，最后定位到<b>表示层的梯度几何</b>——这些样本是「梯度离群点」。",
+  "blocks": [
+    {
+      "h": "0 · 现象（你要判断的“问题”）",
+      "nodes": [
+        {"claim": "在模型初期做不对的 hard example 里，<b>相当一部分即便训练中出现过正确 rollout，也始终学不上去</b>（reward 长期低位）。这与「有正奖励就能学」的默认相悖。", "loc": "Abstract · §1 · Fig 1(b)", "anchors": [{"label": "→原文", "frag": "#S1.F1"}], "kw": "remains unlearnable"}
+      ]
+    },
+    {
+      "h": "1 · 设定 & 定义",
+      "nodes": [
+        {"claim": "训练算法是 GRPO 式 RLVR；per-example 梯度与损失按<b>式 (1)</b> 定义（§5 的梯度分析也基于它）。", "loc": "§3.1 · Eq (1)", "anchors": [{"label": "→原文", "frag": "#S3.E1"}]},
+        {"claim": "分类：初始成功率 ≥10% 为 easy；其余 hard 再分 <b>learnable 𝒟ₗ</b>（训练中稳步改善）与 <b>unlearnable 𝒟ᵤ</b>（reward 一直低）。已排除「从没见过正确 rollout」的样本——研究只针对<b>见过正确 rollout 仍学不会</b>的 𝒟ᵤ。工作定义：验证集饱和时仍无实质提升。", "loc": "§3.2 「A Working Definition」", "anchors": [{"label": "→原文", "frag": "#S3.SS2"}], "kw": "meaningful improvement"}
+      ]
+    },
+    {
+      "h": "2 · 现象普遍性（证据强度）",
+      "nodes": [
+        {"claim": "跨 <b>Qwen2.5-0.5B / Qwen2.5-3B / Llama3.2-3B-Instruct</b>、MATH 与 DeepScaleR 都出现；各组 unlearnable 占比见<b>表 1</b>。→ 不是单一模型/数据集的偶然。", "loc": "§3.3 · Table 1", "anchors": [{"label": "→原文", "frag": "#S3.T1"}]}
+      ]
+    },
+    {
+      "h": "3 · 两个被逐一否掉的“常见解释”（消融干净度）",
+      "nodes": [
+        {"claim": "<b>假设 1：正样本太稀</b>（每 batch 正 rollout 太少）。用 <b>oversampling + experience replay</b> 强行保证每例正负比恒定——仍学不会。→ 排除「量不够」。", "loc": "§4.1 · Fig 5", "anchors": [{"label": "→原文", "frag": "#S4.SS1"}], "kw": "oversampling with replay"},
+        {"claim": "<b>假设 2：梯度被抑制</b>（正 rollout 在 reference policy 下概率低 → 被 PPO clipping / KL 洗掉）。查了 reference 概率、clipping 率，并<b>消融掉 clipping 与 KL</b>——仍学不会。→ 排除「优化约束压制」。", "loc": "§4.2 · Fig 3 / Fig 4", "anchors": [{"label": "→原文", "frag": "#S4.SS2"}], "kw": "clipping or the KL penalty"}
+      ]
+    },
+    {
+      "h": "4 · 真正病因：表示层 / 梯度离群（论文核心主张）",
+      "nodes": [
+        {"claim": "<b>度量</b>：对每个样本取正确 rollout 的 per-example 梯度（GRPO 损失，对一个固定随机 LoRA 求梯度），两两算<b>余弦相似度</b>。0.5B 上 LoRA 梯度相似度与全参高度相关。", "loc": "§5.1 「Computing cross-example gradient similarity」", "anchors": [{"label": "→原文", "frag": "#S5.SS1"}], "kw": "cosine similarity between gradients"},
+        {"claim": "<b>结果</b>：unlearnable 样本与其余训练数据的<b>梯度相似度显著偏低</b>——它们是梯度空间的离群点，学它们=拽模型往一个跟大盘不兼容的方向走。这就是标题的 representation issue。", "loc": "§5.1 · Fig 6 · Fig 1(c)", "anchors": [{"label": "→原文", "frag": "#S5.F6"}], "kw": "low gradient similarity"}
+      ]
+    },
+    {
+      "h": "5 · 佐证 & 干预",
+      "nodes": [
+        {"claim": "<b>佐证</b>：即便最终答案对，unlearnable 样本的<b>推理过程质量也明显更低</b>（GPT-5-mini 打 0–5 分），说明「答案对 ≠ 推理模式可迁移」。案例见表 2。", "loc": "§5.2 · Table 2 · Fig 1(d)", "anchors": [{"label": "→原文", "frag": "#S5.SS2"}], "kw": "lower-quality reasoning"},
+        {"claim": "<b>干预</b>：数据增强<b>不能</b>提高梯度相似度（§5.3）；但 <b>mid-training 能</b>（§5.4）——暗示可学性是可被前置训练改变的表示属性，而非样本死结。", "loc": "§5.3 / §5.4", "anchors": [{"label": "→§5.3", "frag": "#S5.SS3"}, {"label": "→§5.4", "frag": "#S5.SS4"}]}
+      ]
+    },
+    {
+      "h": "6 · 局限（别被过度外推）",
+      "nodes": [
+        {"claim": "只在<b>中小模型 + 数学推理</b>域验证；unlearnable 是<b>阈值化的操作定义</b>（靠「验证饱和后是否提升」判定），边界样本归类模糊。→ 大模型/其他域是否成立，未知。", "loc": "§6 Limitations", "anchors": [{"label": "→原文", "frag": "#S6.SS0.SSS0.Px3"}], "kw": "small to mid-scale"}
+      ]
+    },
+    {
+      "h": "7 · 对你的理论切入点",
+      "nodes": [
+        {"mine": true, "tag": "简报观点（非论文原文）", "claim": "论文停在「测到低梯度相似度」的经验刻画，<b>没有可学性的判据/界</b>。可切入：用 NTK / 梯度对齐度把「可学性」形式化，证 <b>低梯度对齐 ⇒ RLVR 不可学</b> 的下界，并给一个训练前就能算的可学性预测量（把 §5.4「mid-training 提相似度」纳为可干预变量）。", "loc": "衔接 §5.1 / §5.4"}
+      ]
+    }
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById("read-data").textContent);
+  var esc = function(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); };
+  document.title = "精读 · " + (D.title||"") + (D.id?(" ("+D.id+")"):"");
+  document.getElementById("r-title").textContent = "精读骨架 · " + (D.title||"");
+  document.getElementById("r-meta").textContent = [D.authors, D.venue, D.id?("arXiv "+D.id):""].filter(Boolean).join(" · ");
+  document.getElementById("r-back").href = "./" + (D.briefMonth ? (D.briefMonth+".html") : "index.html");
+  var sl = document.getElementById("r-srclinks");
+  [["abstract", D.srcAbs], ["PDF", D.srcPdf], [D.srcHtml ? "HTML(可锚点)" : "", D.srcHtml]].forEach(function(x){
+    if(!x[0]||!x[1]) return;
+    var a=document.createElement("a"); a.href=x[1]; a.target="_blank"; a.rel="noreferrer"; a.textContent=x[0]; sl.appendChild(a);
+  });
+  document.getElementById("r-hook").innerHTML = D.hook || "";
+  var base = D.srcHtml || D.srcPdf || "";
+  var main = document.getElementById("r-main");
+  (D.blocks||[]).forEach(function(b){
+    var sec=document.createElement("section"); sec.className="blk";
+    var h=document.createElement("h3"); h.textContent=b.h; sec.appendChild(h);
+    (b.nodes||[]).forEach(function(n){
+      var node=document.createElement("div"); node.className="node"+(n.mine?" mine":"");
+      var html="";
+      if(n.mine && n.tag) html+='<div class="tag">'+esc(n.tag)+'</div>';
+      html+='<div class="claim">'+(n.claim||"")+'</div>';
+      var ptr="";
+      if(n.loc) ptr+='<span class="loc">'+esc(n.loc)+'</span>';
+      (n.anchors||[]).forEach(function(a){ ptr+='<a class="src" href="'+(base+(a.frag||""))+'" target="_blank" rel="noreferrer">'+esc(a.label||"→原文")+'</a>'; });
+      if(n.kw) ptr+='<span class="kw">搜:<code>'+esc(n.kw)+'</code></span>';
+      if(ptr) html+='<div class="ptr">'+ptr+'</div>';
+      node.innerHTML=html; sec.appendChild(node);
+    });
+    main.appendChild(sec);
+  });
+  window.addEventListener("load", function(){
+    if(window.renderMathInElement){
+      renderMathInElement(document.body,{delimiters:[{left:"$",right:"$",display:false}],throwOnError:false});
+    }
+  });
+})();
+</script>
+</body>
+</html>

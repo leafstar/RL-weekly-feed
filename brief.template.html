@@ -54,6 +54,7 @@
   .badge{font-size:12px;font-weight:700;border:var(--border-thin);padding:2px 8px;border-radius:2px;white-space:nowrap}
   .b-main{background:var(--primary);color:#fff} .b-ws{background:var(--tertiary);color:#fff} .b-pre{background:var(--panel-tint)}
   .b-open{background:var(--primary);color:#fff} .b-partial{background:var(--yellow)} .b-filled{background:var(--secondary);color:var(--secondary-dark)}
+  .b-read{background:var(--ink);color:#fff;box-shadow:2px 2px 0 0 var(--line)} .b-read:hover{background:var(--primary-dark);text-decoration:none}
   .fields{display:grid;gap:7px;margin-top:6px}
   .f{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:15.5px;line-height:1.5}
   .f .k{font-weight:800;color:var(--primary-dark)}
@@ -272,7 +273,7 @@
     var topics = (e.topics||[]).map(function(t){return '<span class="topic">'+esc(t)+'</span>';}).join("");
     return '<article class="card" data-domain="'+(e.domain||"RL")+'" data-venue="'+e.venueClass+'" data-status="'+e.status+'" data-text="'+esc((e.title+" "+e.phenomenon).toLowerCase())+'">'
       + '<div class="hd"><span class="rank">'+(i+1)+'</span><span class="ttl">'+link(e.title,e.id)+'</span></div>'
-      + '<div class="badges"><span class="badge '+v.cls+'">'+v.label+' · '+esc(e.venue)+'</span><span class="badge '+s.cls+'">'+s.label+'</span></div>'
+      + '<div class="badges"><span class="badge '+v.cls+'">'+v.label+' · '+esc(e.venue)+'</span><span class="badge '+s.cls+'">'+s.label+'</span>'+(e.hasRead?'<a class="badge b-read" href="./read-'+e.id+'.html">📖 精读</a>':'')+'</div>'
       + '<div class="authors">'+esc(e.authors)+'</div>'
       + '<div class="fields">'+fields+'</div>'
       + (topics?'<div class="topics">'+topics+'</div>':'')

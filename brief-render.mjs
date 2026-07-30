@@ -13,6 +13,8 @@ const templatePath = join(__dirname, "brief.template.html");
 
 const DATA_RE = /<script type="application\/json" id="brief-data">[\s\S]*?<\/script>/;
 const TITLE_RE = /<title>[\s\S]*?<\/title>/;
+const readTemplatePath = join(__dirname, "read.template.html");
+const READ_DATA_RE = /<script type="application\/json" id="read-data">[\s\S]*?<\/script>/;
 
 async function renderMonth(template, month) {
   const json = (await readFile(join(briefsDir, `${month}.json`), "utf8")).trim();
@@ -24,6 +26,16 @@ async function renderMonth(template, month) {
   if (!DATA_RE.test(template)) throw new Error("template is missing the brief-data script block");
   await writeFile(join(briefsDir, `${month}.html`), html, "utf8");
   console.log(`rendered ${month}.html`);
+}
+
+async function renderRead(readTemplate, id) {
+  if (!READ_DATA_RE.test(readTemplate)) throw new Error("read.template.html missing the read-data script block");
+  const json = (await readFile(join(briefsDir, `read-${id}.json`), "utf8")).trim();
+  JSON.parse(json); // throws early on malformed data
+  const block = `<script type="application/json" id="read-data">\n${json}\n</script>`;
+  const html = readTemplate.replace(READ_DATA_RE, () => block);
+  await writeFile(join(briefsDir, `read-${id}.html`), html, "utf8");
+  console.log(`rendered read-${id}.html`);
 }
 
 async function buildIndex() {
@@ -63,4 +75,7 @@ if (arg) {
   months = files.filter((f) => /^\d{4}-\d{2}\.json$/.test(f)).map((f) => f.replace(".json", ""));
 }
 for (const m of months) await renderMonth(template, m);
+const readTemplate = await readFile(readTemplatePath, "utf8");
+const readIds = (await readdir(briefsDir)).filter((f) => /^read-.+\.json$/.test(f)).map((f) => f.replace(/^read-/, "").replace(/\.json$/, ""));
+for (const id of readIds) await renderRead(readTemplate, id);
 await buildIndex();

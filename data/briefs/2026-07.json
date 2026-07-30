@@ -31,7 +31,7 @@
       },
       {
         "title": "The Unlearnability Phenomenon in RLVR",
-        "id": "2605.16787", "authors": "Chen, He & Zhao", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "id": "2605.16787", "authors": "Chen, He & Zhao", "venue": "ICML 2026", "venueClass": "main", "status": "open", "hasRead": true,
         "topics": ["RLVR","Gradient Geometry","Learnability"],
         "phenomenon": "一部分 hard example 即使采到正确 rollout（有正奖励）也学不会；加采样/换优化器无效；病根是它们与其余样本的跨样本梯度相似度低、推理模式不可泛化。",
         "why": "反\"有正奖励就能学上去\"；首次系统刻画。",

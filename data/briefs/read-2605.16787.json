@@ -1,0 +1,65 @@
+{
+  "id": "2605.16787",
+  "title": "The Unlearnability Phenomenon in RLVR",
+  "authors": "Chen, He & Zhao",
+  "venue": "ICML 2026",
+  "briefMonth": "2026-07",
+  "srcAbs": "https://arxiv.org/abs/2605.16787",
+  "srcPdf": "https://arxiv.org/pdf/2605.16787",
+  "srcHtml": "https://arxiv.org/html/2605.16787",
+  "hook": "一句话：RLVR 里有一批 hard example，<b>即使采到正确 rollout（有正奖励可学）也学不会</b>；作者逐一排除常见解释，最后定位到<b>表示层的梯度几何</b>——这些样本是「梯度离群点」。",
+  "blocks": [
+    {
+      "h": "0 · 现象（你要判断的“问题”）",
+      "nodes": [
+        {"claim": "在模型初期做不对的 hard example 里，<b>相当一部分即便训练中出现过正确 rollout，也始终学不上去</b>（reward 长期低位）。这与「有正奖励就能学」的默认相悖。", "loc": "Abstract · §1 · Fig 1(b)", "anchors": [{"label": "→原文", "frag": "#S1.F1"}], "kw": "remains unlearnable"}
+      ]
+    },
+    {
+      "h": "1 · 设定 & 定义",
+      "nodes": [
+        {"claim": "训练算法是 GRPO 式 RLVR；per-example 梯度与损失按<b>式 (1)</b> 定义（§5 的梯度分析也基于它）。", "loc": "§3.1 · Eq (1)", "anchors": [{"label": "→原文", "frag": "#S3.E1"}]},
+        {"claim": "分类：初始成功率 ≥10% 为 easy；其余 hard 再分 <b>learnable 𝒟ₗ</b>（训练中稳步改善）与 <b>unlearnable 𝒟ᵤ</b>（reward 一直低）。已排除「从没见过正确 rollout」的样本——研究只针对<b>见过正确 rollout 仍学不会</b>的 𝒟ᵤ。工作定义：验证集饱和时仍无实质提升。", "loc": "§3.2 「A Working Definition」", "anchors": [{"label": "→原文", "frag": "#S3.SS2"}], "kw": "meaningful improvement"}
+      ]
+    },
+    {
+      "h": "2 · 现象普遍性（证据强度）",
+      "nodes": [
+        {"claim": "跨 <b>Qwen2.5-0.5B / Qwen2.5-3B / Llama3.2-3B-Instruct</b>、MATH 与 DeepScaleR 都出现；各组 unlearnable 占比见<b>表 1</b>。→ 不是单一模型/数据集的偶然。", "loc": "§3.3 · Table 1", "anchors": [{"label": "→原文", "frag": "#S3.T1"}]}
+      ]
+    },
+    {
+      "h": "3 · 两个被逐一否掉的“常见解释”（消融干净度）",
+      "nodes": [
+        {"claim": "<b>假设 1：正样本太稀</b>（每 batch 正 rollout 太少）。用 <b>oversampling + experience replay</b> 强行保证每例正负比恒定——仍学不会。→ 排除「量不够」。", "loc": "§4.1 · Fig 5", "anchors": [{"label": "→原文", "frag": "#S4.SS1"}], "kw": "oversampling with replay"},
+        {"claim": "<b>假设 2：梯度被抑制</b>（正 rollout 在 reference policy 下概率低 → 被 PPO clipping / KL 洗掉）。查了 reference 概率、clipping 率，并<b>消融掉 clipping 与 KL</b>——仍学不会。→ 排除「优化约束压制」。", "loc": "§4.2 · Fig 3 / Fig 4", "anchors": [{"label": "→原文", "frag": "#S4.SS2"}], "kw": "clipping or the KL penalty"}
+      ]
+    },
+    {
+      "h": "4 · 真正病因：表示层 / 梯度离群（论文核心主张）",
+      "nodes": [
+        {"claim": "<b>度量</b>：对每个样本取正确 rollout 的 per-example 梯度（GRPO 损失，对一个固定随机 LoRA 求梯度），两两算<b>余弦相似度</b>。0.5B 上 LoRA 梯度相似度与全参高度相关。", "loc": "§5.1 「Computing cross-example gradient similarity」", "anchors": [{"label": "→原文", "frag": "#S5.SS1"}], "kw": "cosine similarity between gradients"},
+        {"claim": "<b>结果</b>：unlearnable 样本与其余训练数据的<b>梯度相似度显著偏低</b>——它们是梯度空间的离群点，学它们=拽模型往一个跟大盘不兼容的方向走。这就是标题的 representation issue。", "loc": "§5.1 · Fig 6 · Fig 1(c)", "anchors": [{"label": "→原文", "frag": "#S5.F6"}], "kw": "low gradient similarity"}
+      ]
+    },
+    {
+      "h": "5 · 佐证 & 干预",
+      "nodes": [
+        {"claim": "<b>佐证</b>：即便最终答案对，unlearnable 样本的<b>推理过程质量也明显更低</b>（GPT-5-mini 打 0–5 分），说明「答案对 ≠ 推理模式可迁移」。案例见表 2。", "loc": "§5.2 · Table 2 · Fig 1(d)", "anchors": [{"label": "→原文", "frag": "#S5.SS2"}], "kw": "lower-quality reasoning"},
+        {"claim": "<b>干预</b>：数据增强<b>不能</b>提高梯度相似度（§5.3）；但 <b>mid-training 能</b>（§5.4）——暗示可学性是可被前置训练改变的表示属性，而非样本死结。", "loc": "§5.3 / §5.4", "anchors": [{"label": "→§5.3", "frag": "#S5.SS3"}, {"label": "→§5.4", "frag": "#S5.SS4"}]}
+      ]
+    },
+    {
+      "h": "6 · 局限（别被过度外推）",
+      "nodes": [
+        {"claim": "只在<b>中小模型 + 数学推理</b>域验证；unlearnable 是<b>阈值化的操作定义</b>（靠「验证饱和后是否提升」判定），边界样本归类模糊。→ 大模型/其他域是否成立，未知。", "loc": "§6 Limitations", "anchors": [{"label": "→原文", "frag": "#S6.SS0.SSS0.Px3"}], "kw": "small to mid-scale"}
+      ]
+    },
+    {
+      "h": "7 · 对你的理论切入点",
+      "nodes": [
+        {"mine": true, "tag": "简报观点（非论文原文）", "claim": "论文停在「测到低梯度相似度」的经验刻画，<b>没有可学性的判据/界</b>。可切入：用 NTK / 梯度对齐度把「可学性」形式化，证 <b>低梯度对齐 ⇒ RLVR 不可学</b> 的下界，并给一个训练前就能算的可学性预测量（把 §5.4「mid-training 提相似度」纳为可干预变量）。", "loc": "衔接 §5.1 / §5.4"}
+      ]
+    }
+  ]
+}
