@@ -40,6 +40,8 @@
   .sec-h{font-family:Georgia,serif;font-weight:900;font-size:26px;margin:0 0 4px;
     display:inline-block;border-bottom:8px solid var(--primary);padding-bottom:2px}
   .sec-tag{color:var(--muted);font-size:15px;margin:6px 0 18px}
+  .domain-block{margin:0 0 6px}
+  .domain-h{font-family:Georgia,serif;font-weight:900;font-size:20px;margin:24px 0 4px;padding:5px 12px;border:var(--border-thin);background:var(--panel-tint);box-shadow:2px 2px 0 0 var(--line)}
   .subh{font-weight:800;font-size:18px;margin:26px 0 12px;color:var(--primary-dark);
     text-transform:uppercase;letter-spacing:.04em}
   .card{border:var(--border);background:var(--panel);box-shadow:var(--shadow);padding:16px 18px;margin:0 0 18px}
@@ -83,6 +85,7 @@
 
 <div class="controls">
   <div class="cgroup"><span class="clab">区</span><span id="f-section"></span></div>
+  <div class="cgroup"><span class="clab">领域</span><span id="f-domain"></span></div>
   <div class="cgroup"><span class="clab">来源</span><span id="f-venue"></span></div>
   <div class="cgroup"><span class="clab">理论现状</span><span id="f-status"></span></div>
   <div class="cgroup"><span class="clab">搜索</span><input id="f-q" type="search" placeholder="标题 / 现象…" /></div>
@@ -257,7 +260,7 @@
   document.getElementById("notes-body").innerHTML = DATA.notes.map(function(n){return "<p>"+n+"</p>";}).join("");
   document.getElementById("foot").textContent = "生成于 " + DATA.generatedAt + " · arXiv 数据经人工/模型策划 · 公式由 KaTeX 渲染（需联网）";
 
-  var state = {section:"all", venue:"all", status:"all", q:""};
+  var state = {section:"all", domain:"all", venue:"all", status:"all", q:""};
 
   function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function link(t,id){ return '<a href="'+ABS(id)+'" target="_blank" rel="noreferrer">'+esc(t)+'</a>'; }
@@ -267,7 +270,7 @@
     var fields = [["现象",e.phenomenon],["值得建模",e.why],["理论现状",e.theory],["切入点",e.entry]]
       .map(function(f){ return '<div class="f"><span class="k">'+f[0]+'</span><span>'+esc(f[1])+'</span></div>'; }).join("");
     var topics = (e.topics||[]).map(function(t){return '<span class="topic">'+esc(t)+'</span>';}).join("");
-    return '<article class="card" data-venue="'+e.venueClass+'" data-status="'+e.status+'" data-text="'+esc((e.title+" "+e.phenomenon).toLowerCase())+'">'
+    return '<article class="card" data-domain="'+(e.domain||"RL")+'" data-venue="'+e.venueClass+'" data-status="'+e.status+'" data-text="'+esc((e.title+" "+e.phenomenon).toLowerCase())+'">'
       + '<div class="hd"><span class="rank">'+(i+1)+'</span><span class="ttl">'+link(e.title,e.id)+'</span></div>'
       + '<div class="badges"><span class="badge '+v.cls+'">'+v.label+' · '+esc(e.venue)+'</span><span class="badge '+s.cls+'">'+s.label+'</span></div>'
       + '<div class="authors">'+esc(e.authors)+'</div>'
@@ -284,12 +287,23 @@
       html += '<section class="sec" data-sec="I"><h2 class="sec-h">I. 实验现象 → 候选方向</h2>'
         + '<div class="sec-tag">你要找的"问题"：稳健、反直觉、还没理论的实验现象</div>';
       var order = 0;
-      html += '<div class="subh">A · 顶会主会</div>';
-      var aCards = DATA.sectionI.A.map(function(e){return entryCard(e, order++);}).join("");
-      html += aCards || '<div class="empty">（无）</div>';
-      html += '<div class="subh">B · Workshop / 预印本（质量软加分）</div>';
-      var bCards = DATA.sectionI.B.map(function(e){return entryCard(e, order++);}).join("");
-      html += bCards || '<div class="empty">（无）</div>';
+      var LABELS = {RL:"强化学习 RL", FL:"联邦学习 · Personalization"};
+      var present = {};
+      DATA.sectionI.A.concat(DATA.sectionI.B).forEach(function(e){ present[e.domain||"RL"]=true; });
+      var doms = ["RL","FL"].filter(function(k){return present[k];});
+      Object.keys(present).forEach(function(k){ if(doms.indexOf(k)<0) doms.push(k); });
+      var multiDomain = doms.length > 1;
+      doms.forEach(function(dk){
+        if(state.domain!=="all" && state.domain!==dk) return;
+        var aD = DATA.sectionI.A.filter(function(e){return (e.domain||"RL")===dk;});
+        var bD = DATA.sectionI.B.filter(function(e){return (e.domain||"RL")===dk;});
+        if(!aD.length && !bD.length) return;
+        html += '<div class="domain-block">';
+        if(multiDomain) html += '<h3 class="domain-h">'+(LABELS[dk]||dk)+'</h3>';
+        if(aD.length){ html += '<div class="subh">A · 顶会主会</div>' + aD.map(function(e){return entryCard(e, order++);}).join(""); }
+        if(bD.length){ html += '<div class="subh">B · Workshop / 预印本（质量软加分）</div>' + bD.map(function(e){return entryCard(e, order++);}).join(""); }
+        html += '</div>';
+      });
       html += '<div class="subh" style="color:var(--muted)">本月还扫到（同类现象，未展开）</div><div class="fields">'
         + DATA.sectionI.alsoScanned.map(function(a){return '<div class="f" data-venue="all" data-status="all" data-text="'+esc(a.title.toLowerCase())+'"><span class="k">·</span><span>'+link(a.title,a.id)+' — '+esc(a.note)+'</span></div>';}).join("")
         + '</div>';
@@ -353,12 +367,19 @@
       b.addEventListener("click", function(){
         state[key]=o.val;
         [].forEach.call(box.children,function(c){c.setAttribute("aria-pressed", c===b);});
-        if(key==="section") render(); else applyFilters();
+        if(key==="section"||key==="domain") render(); else applyFilters();
       });
       box.appendChild(b);
     });
   }
   chipRow("f-section",[{val:"all",label:"全部"},{val:"I",label:"I 实验现象"},{val:"II",label:"II 理论前沿"},{val:"III",label:"III backlog"}],"section");
+  (function(){
+    var LAB={RL:"RL", FL:"FL·个性化"}, seen={};
+    DATA.sectionI.A.concat(DATA.sectionI.B).forEach(function(e){ seen[e.domain||"RL"]=true; });
+    var ks=Object.keys(seen);
+    if(ks.length<=1){ document.getElementById("f-domain").closest(".cgroup").style.display="none"; }
+    else { chipRow("f-domain",[{val:"all",label:"全部"}].concat(ks.map(function(k){return {val:k,label:LAB[k]||k};})),"domain"); }
+  })();
   chipRow("f-venue",[{val:"all",label:"全部"},{val:"main",label:"主会"},{val:"ws",label:"Workshop"},{val:"pre",label:"预印本"}],"venue");
   chipRow("f-status",[{val:"all",label:"全部"},{val:"open",label:"空白"},{val:"partial",label:"半空"},{val:"filled",label:"已填"}],"status");
   document.getElementById("f-q").addEventListener("input", function(e){ state.q=e.target.value; applyFilters(); });

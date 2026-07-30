@@ -33,7 +33,7 @@ async function buildIndex() {
     .map((f) => f.replace(".html", ""))
     .sort()
     .reverse();
-  const items = months.map((m) => `      <li><a href="./${m}.html">${m}</a></li>`).join("\n");
+  const items = months.map((m) => `      <li><a href="./data/briefs/${m}.html">${m}</a></li>`).join("\n");
   const html = `<!doctype html>
 <html lang="zh"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -49,8 +49,8 @@ async function buildIndex() {
 <body><h1>RL 实验现象 · 月度简报</h1><ul>
 ${items}
 </ul></body></html>`;
-  await writeFile(join(briefsDir, "index.html"), html, "utf8");
-  console.log(`rendered index.html (${months.length} months)`);
+  await writeFile(join(__dirname, "index.html"), html, "utf8");
+  console.log(`rendered root index.html (${months.length} months)`);
 }
 
 const template = await readFile(templatePath, "utf8");
