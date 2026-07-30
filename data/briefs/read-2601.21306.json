@@ -1,0 +1,55 @@
+{
+  "id": "2601.21306",
+  "title": "The Surprising Difficulty of Search in Model-Based RL",
+  "authors": "Chang, Henaff, Amos & Dudek",
+  "venue": "ICML 2026",
+  "briefMonth": "2026-07",
+  "srcAbs": "https://arxiv.org/abs/2601.21306",
+  "srcPdf": "https://arxiv.org/pdf/2601.21306",
+  "srcHtml": "",
+  "hook": "一句话：即使世界模型<b>高度准确</b>，加 search 也会<b>损害</b>性能；真正该修的是 <b>overestimation bias</b>（不是模型/值函数精度），对 value ensemble 取 <b>min</b> 就能解锁有效 search 并达 SOTA。<br>⚠ 本篇 arXiv <b>无 HTML</b> → 无精确锚点：请用每条 <code>搜:</code> 的关键词在 PDF（见顶部链接）里 Ctrl-F 定位；措辞以 v2 为准（v1 曾表述为 distribution shift）。",
+  "blocks": [
+    {
+      "h": "0 · 现象（你要判断的“问题”）",
+      "nodes": [
+        {"claim": "在 model-based RL 里，<b>即使模型高度准确，加 search 也可能损害性能</b>——search 不是「学好的 policy」的即插即用替代。", "loc": "摘要 · §1（PDF）", "kw": "search can harm"}
+      ]
+    },
+    {
+      "h": "1 · 反直觉点（挑战的公论）",
+      "nodes": [
+        {"claim": "主流认为 model-based RL 的主要障碍是<b>长程预测与 compounding error</b>。本文<b>挑战</b>这一公论：模型精度不是关键瓶颈。", "loc": "摘要 · §1（PDF）", "kw": "compounding errors"}
+      ]
+    },
+    {
+      "h": "2 · 真正病因（核心主张，v2）",
+      "nodes": [
+        {"claim": "真正更重要的是<b>缓解 overestimation bias</b>，而非提升模型或值函数精度。（注：v1 摘要此处表述为 distribution shift；v2 收敛到 overestimation bias。）", "loc": "摘要 · 分析节（PDF）", "kw": "overestimation bias"}
+      ]
+    },
+    {
+      "h": "3 · 修法",
+      "nodes": [
+        {"claim": "对<b>一组值函数取 minimum</b>（ensemble-min）有效地压住该 bias，从而让 search 真正奏效。", "loc": "方法节（PDF）", "kw": "minimum over an ensemble"}
+      ]
+    },
+    {
+      "h": "4 · 结果",
+      "nodes": [
+        {"claim": "在多个主流 benchmark 域达到 <b>SOTA</b>。", "loc": "实验节（PDF）", "kw": "state-of-the-art"}
+      ]
+    },
+    {
+      "h": "5 · 说明（无 HTML 的兜底）",
+      "nodes": [
+        {"claim": "本篇 arXiv 未提供 HTML，故无逐节可点锚点。<b>对照方式</b>：打开顶部 PDF 链接，用上面各条的 <code>搜:</code> 关键词 Ctrl-F 跳到对应处。等作者放出 HTML 版后可升级为精确锚点。", "loc": "全篇（PDF）"}
+      ]
+    },
+    {
+      "h": "6 · 对你的理论切入点",
+      "nodes": [
+        {"mine": true, "tag": "简报观点（非论文原文）", "claim": "把 planning 的 <b>max/argmax 算子当成值高估的放大器</b>，用 order-statistics 刻画「search 深度/宽度 × 值误差」如何放大 overestimation；证 <b>ensemble-min 的偏差压缩率</b>，并求「模型精度到多高时 search 仍劣于直接用 policy」的临界判据。", "loc": "衔接 病因 / 修法"}
+      ]
+    }
+  ]
+}

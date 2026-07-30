@@ -1,0 +1,55 @@
+{
+  "id": "2603.21173",
+  "title": "Rethinking Plasticity in Deep RL",
+  "authors": "He",
+  "venue": "预印本",
+  "briefMonth": "2026-07",
+  "srcAbs": "https://arxiv.org/abs/2603.21173",
+  "srcPdf": "https://arxiv.org/pdf/2603.21173",
+  "srcHtml": "https://arxiv.org/html/2603.21173",
+  "hook": "一句话：深度 RL 的<b>可塑性丢失</b>被提出一个 <b>Optimization-Centric（OCP）</b>解释——旧任务的最优点变成新任务的坏局部极小、困住参数；并<b>把 dormant neuron 等价于零梯度态</b>。这篇偏理论。",
+  "blocks": [
+    {
+      "h": "0 · 现象（你要判断的“问题”）",
+      "nodes": [
+        {"claim": "深度 RL 在非平稳环境里会<b>丧失继续学习的能力</b>（loss of plasticity）。既有刻画（dormant neuron、effective rank）只是<b>描述性指标</b>，解释不了背后的优化动力学。", "loc": "§1 · §2 · Fig 1", "anchors": [{"label": "→原文", "frag": "#S1"}], "kw": "loss of plasticity"}
+      ]
+    },
+    {
+      "h": "1 · 关键定义 & 立场（理论核心）",
+      "nodes": [
+        {"claim": "提出 <b>OCP 假设（Optimization-Centric Plasticity）</b>并给出正式 <b>Definition 1</b> 与一组公式（式 1–12）刻画 dormancy / 可塑性。这是全文的形式化落点，理论切入先看这里。", "loc": "§3 · Definition 1 · Eq (1)–(12)", "anchors": [{"label": "→定义", "frag": "#Thmdefinition1"}, {"label": "→§3", "frag": "#S3"}]}
+      ]
+    },
+    {
+      "h": "2 · OCP 机制主张",
+      "nodes": [
+        {"claim": "任务从 f₁ 切到 f₂ 时目标函数大变；网络在 f₁ 收敛到的最优点，对 f₂ 可能是<b>坏局部极小</b>，参数被困在那里、拖累后续学习。这是「可塑性丢失」的优化视角机制（Fig 2 直观图）。", "loc": "§3.1 · Fig 2", "anchors": [{"label": "→原文", "frag": "#S3.SS1"}], "kw": "poor local optima"}
+      ]
+    },
+    {
+      "h": "3 · 理论结果：dormancy ≡ 零梯度态",
+      "nodes": [
+        {"claim": "<b>把 neuron dormancy 等价于零梯度状态</b>——即「缺乏梯度信号」是 dormancy 的主因，而非某种玄学容量衰减。Fig 4 给出 dormant 与 zero-gradient neuron 的对应。", "loc": "§3.3 · Fig 4 · Eq", "anchors": [{"label": "→原文", "frag": "#S3.SS3"}, {"label": "→式", "frag": "#S3.E1"}], "kw": "zero-gradient"}
+      ]
+    },
+    {
+      "h": "4 · 关键证据：可塑性丢失高度「任务特定」",
+      "nodes": [
+        {"claim": "<b>高 dormancy 的网络，切到一个差异很大的新任务时能追平随机初始化</b> → 说明容量还在、只是被<b>当前任务的 landscape 抑制</b>，不是永久损坏。Fig 3 给 loss 收敛 vs 最终性能。", "loc": "§3.2 · Fig 3", "anchors": [{"label": "→原文", "frag": "#S3.SS2"}], "kw": "task"}
+      ]
+    },
+    {
+      "h": "5 · 范围（别过度外推）",
+      "nodes": [
+        {"claim": "本文是<b>假设 + 机制刻画</b>层面（主文 §1–§3 精炼，实验在附录 B–D）；给了 dormancy 的等价刻画，但<b>没有可塑性丢失的收敛速率/动力学定量理论</b>。规模与环境覆盖有限。", "loc": "§3 · Appendix B", "anchors": [{"label": "→附录B", "frag": "#A2"}]}
+      ]
+    },
+    {
+      "h": "6 · 对你的理论切入点",
+      "nodes": [
+        {"mine": true, "tag": "简报观点（非论文原文）", "claim": "把「任务切换」建成参数落入<b>旧任务吸引域</b>，用 landscape 曲率/梯度流刻画「何时旧极小 = 新任务坏极小」；进而证<b>参数约束（proximity/正则）缓解可塑性丢失</b>的可证条件。可与 III 区 backlog 的 plasticity/dormant-neuron 方向合并推进。", "loc": "衔接 §3.1 / §3.3"}
+      ]
+    }
+  ]
+}

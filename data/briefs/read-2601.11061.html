@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>精读骨架</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --bg:#fff8f7; --panel:#ffffff; --panel-soft:#fff0ef; --panel-tint:#ffe9e7;
+    --ink:#251818; --muted:#584140; --line:#201615;
+    --primary:#ff6b6b; --primary-dark:#ae2f34; --secondary:#b1eeed; --secondary-dark:#2a6767;
+    --tertiary:#9897c5; --yellow:#f2d95c;
+    --shadow:6px 6px 0 0 var(--line); --shadow-sm:4px 4px 0 0 var(--line);
+    --border:4px solid var(--line); --border-thin:2px solid var(--line);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:17px;
+    font-family:"Archivo Narrow","Arial Narrow",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+  a{color:var(--primary-dark);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 clamp(14px,3vw,28px)}
+  header.top{padding:24px clamp(16px,4vw,44px) 20px;border-bottom:6px solid var(--line);background:var(--panel)}
+  .back{font-size:14px;color:var(--muted)}
+  header.top h1{margin:6px 0 2px;font-family:Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(24px,3.4vw,38px);line-height:1.06}
+  .meta{color:var(--muted);font-size:15px;margin:6px 0 0}
+  .srclinks a{display:inline-block;margin:8px 8px 0 0;border:var(--border-thin);padding:3px 10px;box-shadow:2px 2px 0 0 var(--line);font-size:14px;background:var(--panel)}
+  .hook{max-width:1000px;margin:18px auto 0;padding:12px 16px;border:var(--border-thin);background:var(--panel-tint);box-shadow:var(--shadow-sm);font-weight:700}
+  .howto{max-width:1000px;margin:14px auto 0;padding:10px 16px;border-left:6px solid var(--tertiary);background:var(--panel-soft);color:var(--muted);font-size:14.5px;line-height:1.55}
+  main{padding:8px clamp(14px,3vw,28px) 80px}
+  .blk{max-width:1000px;margin:26px auto 0}
+  .blk h3{font-family:Georgia,serif;font-weight:900;font-size:21px;margin:0 0 10px;display:inline-block;border-bottom:6px solid var(--primary);padding-bottom:2px}
+  .node{border:var(--border);background:var(--panel);box-shadow:var(--shadow);padding:12px 15px;margin:0 0 14px}
+  .node:hover{transform:translate(-1px,-1px);box-shadow:7px 7px 0 0 var(--line)}
+  .claim{font-size:16.5px;line-height:1.5}
+  .claim b{color:var(--primary-dark)}
+  .ptr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px;padding-top:8px;border-top:1px dashed var(--line)}
+  .loc{font-size:12.5px;font-weight:800;border:var(--border-thin);padding:2px 8px;border-radius:2px;background:var(--panel-tint);white-space:nowrap}
+  .src{font-size:13px;font-weight:800;border:var(--border-thin);padding:2px 9px;box-shadow:2px 2px 0 0 var(--line);background:var(--yellow);color:var(--ink)}
+  .src:hover{background:var(--primary);color:#fff;text-decoration:none}
+  .kw{font-size:12.5px;color:var(--muted)}
+  .kw code{background:var(--panel-soft);border:1px solid var(--line);padding:0 5px;border-radius:2px}
+  .mine{border-left:6px solid var(--secondary-dark);background:var(--panel-soft)}
+  .mine .tag{font-size:11px;font-weight:800;color:var(--secondary-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  footer{max-width:1000px;margin:0 auto;padding:18px clamp(14px,3vw,28px) 60px;color:var(--muted);font-size:13px;border-top:var(--border-thin)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="back"><a id="r-back" href="./index.html">← 返回简报</a></div>
+    <h1 id="r-title">精读骨架</h1>
+    <p class="meta" id="r-meta"></p>
+    <div class="srclinks" id="r-srclinks"></div>
+  </div>
+</header>
+
+<div class="hook" id="r-hook"></div>
+<div class="howto">怎么对照：每个骨架点下方 <span class="src">→原文</span> 会跳到来源的<b>对应章节/图表</b>（有 arXiv HTML 时精确到节；否则跳 PDF 页）；<code>搜:</code> 后是可在 PDF/HTML 里 Ctrl-F 的短关键词。骨架是模型精读所得——先扫骨架，存疑处点 →原文 核对，结论以原文为准。</div>
+
+<main id="r-main"></main>
+<footer>骨架为模型精读所得，可能有误；每点的「→原文」即为回原文的核对入口。公式由 KaTeX 渲染（需联网）。</footer>
+
+<script type="application/json" id="read-data">
+{
+  "id": "2601.11061",
+  "title": "Spurious Rewards Paradox: How RLVR Activates Memorization Shortcuts",
+  "authors": "Yan et al.",
+  "venue": "ICML 2026",
+  "briefMonth": "2026-07",
+  "srcAbs": "https://arxiv.org/abs/2601.11061",
+  "srcPdf": "https://arxiv.org/pdf/2601.11061",
+  "srcHtml": "https://arxiv.org/html/2601.11061",
+  "hook": "一句话：用<b>虚假/错误奖励</b>做 RLVR，Qwen2.5-Math 仍显著涨分；作者用机制可解释性工具定位到一条 <b>Anchor–Adapter 电路</b>——模型绕过推理、直接检索已记忆的答案。",
+  "blocks": [
+    {
+      "h": "0 · 现象（你要判断的“问题”）",
+      "nodes": [
+        {"claim": "RLVR 的通常解释是「靠 ground-truth 奖励学到稳健推理策略」。但 Qwen2.5-Math 在<b>虚假/随机/错误奖励</b>下也大幅涨分——benchmark 分提升未必=推理变强。", "loc": "§1 · Fig 1(pass@k)", "anchors": [{"label": "→原文", "frag": "#S1.F1"}], "kw": "spurious rewards"}
+      ]
+    },
+    {
+      "h": "1 · 工具 & 设定",
+      "nodes": [
+        {"claim": "方法是<b>机制可解释性</b>：把 Transformer 残差流当分析对象，用 <b>Path Patching</b>（在 memorized vs reasoning 样本间换 activation）+ Logit Lens 定位「触发记忆检索」的组件；MLP 视作 key-value 记忆。", "loc": "§3 Preliminaries", "anchors": [{"label": "→原文", "frag": "#S3"}], "kw": "Path Patching"},
+        {"claim": "对象：原始 Qwen2.5-Math-7B vs 其 spurious-RLVR checkpoint；6 个数学 benchmark，重点看 MATH-500 / MinervaMath（表现漂移最剧烈）。", "loc": "§4.1 Experiment Setting", "anchors": [{"label": "→原文", "frag": "#S4.SS1"}]}
+      ]
+    },
+    {
+      "h": "2 · 宏观指纹：Perplexity Paradox",
+      "nodes": [
+        {"claim": "<b>答案 token 的 perplexity 下降，而 prompt 侧连贯性反而变差（prompt perplexity 上升）</b>——两者背离，是「牺牲通用语言连贯、换捷径检索」的宏观指纹。", "loc": "§4.2 · Fig 2", "anchors": [{"label": "→原文", "frag": "#S4.SS2"}], "kw": "Perplexity Paradox"}
+      ]
+    },
+    {
+      "h": "3 · 机制定位：Anchor–Adapter 电路（核心主张）",
+      "nodes": [
+        {"claim": "静态分析定位 <b>Functional Anchor 在中层 L18–20</b>（MLP）：它触发对已记忆解的检索；后层 <b>L21+ 作 Structural Adapter</b>，把表示改造成迁就该捷径信号。这条 Anchor–Adapter 电路是「绕过推理」的载体。", "loc": "§4.3 / §4.4 · §7", "anchors": [{"label": "→§4.3", "frag": "#S4.SS3"}, {"label": "→§4.4", "frag": "#S4.SS4"}], "kw": "Functional Anchor"}
+      ]
+    },
+    {
+      "h": "4 · 消融（必要性 / 充分性）",
+      "nodes": [
+        {"claim": "把特定层组换回 base 权重做必要性测试：<b>Anchor Reset（L18–20 MLP）</b>、<b>Adapter Reset（L21–22 MLP）</b>，验证这两组层对记忆行为的必要与充分性。", "loc": "§5 Ablation", "anchors": [{"label": "→原文", "frag": "#S5"}], "kw": "Anchor Reset"}
+      ]
+    },
+    {
+      "h": "5 · 因果操控（可干预性）",
+      "nodes": [
+        {"claim": "对电路里特定 MLP key 做<b>神经元级 steering</b>（推理时缩放激活，无需重训），可<b>双向</b>放大或压制「污染驱动」的性能——说明该行为是可因果操控的、被定位的电路属性。", "loc": "§6.2 Causal Steering / §6.3", "anchors": [{"label": "→§6.2", "frag": "#S6.SS2"}, {"label": "→§6.3", "frag": "#S6.SS3"}], "kw": "causal steering"}
+      ]
+    },
+    {
+      "h": "6 · 范围（别过度外推）",
+      "nodes": [
+        {"claim": "结论主要建立在 <b>Qwen2.5-Math 系列 + 数学域</b> 上；是否跨模型族/其他域普遍成立，属机制解释性证据、未做系统外推验证（见结论）。", "loc": "§7 Conclusion", "anchors": [{"label": "→原文", "frag": "#S7"}]}
+      ]
+    },
+    {
+      "h": "7 · 对你的理论切入点",
+      "nodes": [
+        {"mine": true, "tag": "简报观点（非论文原文）", "claim": "论文是机制/电路级刻画，<b>缺可证的动力学模型</b>。可切入：把「spurious reward 下 GRPO 的 clipping bias 压低答案熵 → policy-gradient 偏好低-perplexity 的已记忆输出」写成可证的<b>偏好漂移</b>，给「奖励与真值无关仍提分」的充分条件；与姊妹作 Exploration vs Exploitation (ICLR 2026, 2512.16912) 的 clipping-bias 解释对接。", "loc": "衔接 §4.2 / §6"}
+      ]
+    }
+  ]
+}
+</script>
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById("read-data").textContent);
+  var esc = function(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); };
+  document.title = "精读 · " + (D.title||"") + (D.id?(" ("+D.id+")"):"");
+  document.getElementById("r-title").textContent = "精读骨架 · " + (D.title||"");
+  document.getElementById("r-meta").textContent = [D.authors, D.venue, D.id?("arXiv "+D.id):""].filter(Boolean).join(" · ");
+  document.getElementById("r-back").href = "./" + (D.briefMonth ? (D.briefMonth+".html") : "index.html");
+  var sl = document.getElementById("r-srclinks");
+  [["abstract", D.srcAbs], ["PDF", D.srcPdf], [D.srcHtml ? "HTML(可锚点)" : "", D.srcHtml]].forEach(function(x){
+    if(!x[0]||!x[1]) return;
+    var a=document.createElement("a"); a.href=x[1]; a.target="_blank"; a.rel="noreferrer"; a.textContent=x[0]; sl.appendChild(a);
+  });
+  document.getElementById("r-hook").innerHTML = D.hook || "";
+  var base = D.srcHtml || D.srcPdf || "";
+  var main = document.getElementById("r-main");
+  (D.blocks||[]).forEach(function(b){
+    var sec=document.createElement("section"); sec.className="blk";
+    var h=document.createElement("h3"); h.textContent=b.h; sec.appendChild(h);
+    (b.nodes||[]).forEach(function(n){
+      var node=document.createElement("div"); node.className="node"+(n.mine?" mine":"");
+      var html="";
+      if(n.mine && n.tag) html+='<div class="tag">'+esc(n.tag)+'</div>';
+      html+='<div class="claim">'+(n.claim||"")+'</div>';
+      var ptr="";
+      if(n.loc) ptr+='<span class="loc">'+esc(n.loc)+'</span>';
+      (n.anchors||[]).forEach(function(a){ ptr+='<a class="src" href="'+(base+(a.frag||""))+'" target="_blank" rel="noreferrer">'+esc(a.label||"→原文")+'</a>'; });
+      if(n.kw) ptr+='<span class="kw">搜:<code>'+esc(n.kw)+'</code></span>';
+      if(ptr) html+='<div class="ptr">'+ptr+'</div>';
+      node.innerHTML=html; sec.appendChild(node);
+    });
+    main.appendChild(sec);
+  });
+  window.addEventListener("load", function(){
+    if(window.renderMathInElement){
+      renderMathInElement(document.body,{delimiters:[{left:"$",right:"$",display:false}],throwOnError:false});
+    }
+  });
+})();
+</script>
+</body>
+</html>

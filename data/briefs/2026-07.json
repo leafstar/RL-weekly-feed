@@ -13,7 +13,7 @@
     "A": [
       {
         "title": "The Surprising Difficulty of Search in Model-Based RL",
-        "id": "2601.21306", "authors": "Chang, Henaff, Amos & Dudek", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "id": "2601.21306", "authors": "Chang, Henaff, Amos & Dudek", "venue": "ICML 2026", "venueClass": "main", "status": "open", "hasRead": true,
         "topics": ["Model-Based RL","Search/Planning","Value Overestimation"],
         "phenomenon": "即使世界模型高度准确，加 search 也会损害性能；真正瓶颈不是模型/值函数精度，而是 overestimation bias；对 value ensemble 取 min 即可修好并达 SOTA。",
         "why": "直接反\"compounding error 是 MBRL 主障碍\"的公论，给了干净因果（bias > accuracy）+ 可复现修法。经典 RL，不是 LLM。",
@@ -22,7 +22,7 @@
       },
       {
         "title": "Spurious Rewards Paradox: How RLVR Activates Memorization Shortcuts",
-        "id": "2601.11061", "authors": "Yan et al.", "venue": "ICML 2026", "venueClass": "main", "status": "partial",
+        "id": "2601.11061", "authors": "Yan et al.", "venue": "ICML 2026", "venueClass": "main", "status": "partial", "hasRead": true,
         "topics": ["RLVR","Mechanistic","Reward Misspecification"],
         "phenomenon": "用虚假/错误奖励做 RLVR，Qwen2.5 仍显著涨分；机制是中层 Anchor 触发记忆检索 + 后层 Adapter 改造表示的电路，可双向因果操控。",
         "why": "反\"RL 涨分=学到推理\"（这里是激活记忆捷径）；有电路级机制证据。姊妹作 Exploration vs Exploitation (ICLR 2026, 2512.16912) 归因到 clipping bias 压熵。",
@@ -60,7 +60,7 @@
       },
       {
         "title": "Rethinking Plasticity in Deep RL",
-        "id": "2603.21173", "authors": "He", "venue": "预印本", "venueClass": "pre", "status": "partial",
+        "id": "2603.21173", "authors": "He", "venue": "预印本", "venueClass": "pre", "status": "partial", "hasRead": true,
         "topics": ["Plasticity Loss","Optimization Landscape","Continual RL"],
         "phenomenon": "提出 Optimization-Centric 假设：旧任务最优点成为新任务坏局部极小、困住参数；理论上把 dormant neuron 等价于零梯度态；可塑性丢失高度任务特定（高 dormancy 网络切到很不同的任务能追平随机初始化 → 容量还在，被 landscape 抑制）。",
         "why": "经典 RL 老大难，且这篇今年已在往理论走（见 III，正在被填的活例）。",
