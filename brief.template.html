@@ -254,7 +254,7 @@
   var DATA = JSON.parse(document.getElementById("brief-data").textContent);
   var ABS = function(id){ return "https://arxiv.org/abs/" + id; };
   var VENUE = {main:{cls:"b-main",label:"主会"}, ws:{cls:"b-ws",label:"Workshop"}, pre:{cls:"b-pre",label:"预印本"}};
-  var STATUS = {open:{cls:"b-open",label:"理论空白"}, partial:{cls:"b-partial",label:"半空"}, filled:{cls:"b-filled",label:"已被填/占"}};
+  var STATUS = {open:{cls:"b-open",label:"真 gap"}, partial:{cls:"b-partial",label:"半覆盖"}, filled:{cls:"b-filled",label:"经典已覆盖"}};
 
   document.getElementById("doc-title").textContent = DATA.title;
   document.getElementById("doc-sub").textContent = DATA.sub || "";
@@ -382,7 +382,7 @@
     else { chipRow("f-domain",[{val:"all",label:"全部"}].concat(ks.map(function(k){return {val:k,label:LAB[k]||k};})),"domain"); }
   })();
   chipRow("f-venue",[{val:"all",label:"全部"},{val:"main",label:"主会"},{val:"ws",label:"Workshop"},{val:"pre",label:"预印本"}],"venue");
-  chipRow("f-status",[{val:"all",label:"全部"},{val:"open",label:"空白"},{val:"partial",label:"半空"},{val:"filled",label:"已填"}],"status");
+  chipRow("f-status",[{val:"all",label:"全部"},{val:"open",label:"真 gap"},{val:"partial",label:"半覆盖"},{val:"filled",label:"经典已覆盖"}],"status");
   document.getElementById("f-q").addEventListener("input", function(e){ state.q=e.target.value; applyFilters(); });
 
   render();

@@ -2,105 +2,103 @@
   "month": "2026-07",
   "title": "RL 简报 · 2026-07",
   "generatedAt": "2026-07-29",
-  "sub": "实验现象优先 · 找理论 project 方向 · 主体 9 篇 / 理论前沿 10 篇 / backlog 5",
+  "sub": "实验现象 + 经典理论归约(⑤ 补丁 v1)· 真 open 仅 B4,其余多为经典 costume/半覆盖",
   "notes": [
-    "给谁用：做 RL 理论、想从实验现象里找 project 方向的人。I 区=你要找的\"问题\"（稳健、反直觉、还没理论的实验现象，即 Wang 2025→Labbi 2026 里的 Wang 位置）；II 区=\"别人做到哪了\"（理论前沿，按工具分组）；III 区=历史开放现象 backlog。",
-    "来源：arXiv cs.LG/cs.AI/stat.ML，用\"现象信号\"词（rethinking / revisiting / surprising / counterintuitive / paradox / phenomenon / illusion / pitfall …）召回，2025-11 ~ 2026-07；venue 软加分不硬筛。",
-    "理论现状靠前向引用判（OpenAlex 现场 / 正式版 Semantic Scholar + key），不靠模型记忆；2026 新论文引用太稀疏 → 默认\"暂空，待核\"，这道核查真正发力在 III。",
-    "口味偏差：\"现象信号\"召回天然偏 LLM-RL；已特意塞入经典 RL（A1 搜索 / B2 可塑性 / B3 mixture policy）。想更偏经典 RL 或某子领域，调召回词即可。"
+    "给谁用：做 RL 理论、想从实验现象里找 project 方向的人。I 区=候选现象 + 它在经典 RL 里的理论现状；II 区=理论前沿；III 区=历史开放现象 backlog。",
+    "来源：arXiv cs.LG/cs.AI/stat.ML，现象信号词召回，2025-11 ~ 2026-07；venue 软加分不硬筛。",
+    "⑤ 理论现状判定(补丁 v1)：默认「疑似已被经典覆盖」，用最小经典模型 + 主动搜经典文献 + 锚点表交叉核，搜不到才判 open；不靠前向引用/模型记忆。故本期多数条目标为「经典已覆盖/半覆盖」，真 open 仅 B4(Final-Window)。每条「理论现状」给出归约到的经典结果。",
+    "口味偏差：召回偏 LLM-RL；下一版召回改双配额(经典 RL 流一等公民 + LLM-RL 流限额)。"
   ],
   "sectionI": {
     "A": [
       {
         "title": "The Surprising Difficulty of Search in Model-Based RL",
-        "id": "2601.21306", "authors": "Chang, Henaff, Amos & Dudek", "venue": "ICML 2026", "venueClass": "main", "status": "open", "hasRead": true,
+        "id": "2601.21306", "authors": "Chang, Henaff, Amos & Dudek", "venue": "ICML 2026", "venueClass": "main", "status": "filled", "hasRead": true,
         "topics": ["Model-Based RL","Search/Planning","Value Overestimation"],
-        "phenomenon": "即使世界模型高度准确，加 search 也会损害性能；真正瓶颈不是模型/值函数精度，而是 overestimation bias；对 value ensemble 取 min 即可修好并达 SOTA。",
-        "why": "直接反\"compounding error 是 MBRL 主障碍\"的公论，给了干净因果（bias > accuracy）+ 可复现修法。经典 RL，不是 LLM。",
-        "theory": "暂空（待核）。缺\"有限模型误差下 search 的 argmax 如何放大 value 高估\"的形式刻画。",
-        "entry": "把 planning 的 max 算子当高估放大器，用 order-statistics / ensemble-min 刻画 bias，推\"何时 search 反劣于 policy\"的临界模型精度。"
+        "phenomenon": "即使世界模型高度准确，加 search 也会损害性能；真正瓶颈是 overestimation bias（非模型/值精度），对 value ensemble 取 min 即可修好并达 SOTA。",
+        "why": "反\"compounding error 是 MBRL 主障碍\"的公论，因果干净、可复现。经典 RL。",
+        "theory": "已被经典覆盖(costume)。最小模型=max/argmax 下的 maximization bias；修法 min-over-ensemble 即 Clipped Double-Q(TD3)/Maxmin/REDQ，理论自 Thrun–Schwartz 1993、van Hasselt Double-Q 起就有。残余：search 深度/宽度如何定量放大 bias 略欠形式化。",
+        "entry": "若要做：把 planning 的 max 当高估放大器，量化 search 深度×值误差 → 高估率，给「模型多准时 search 仍劣于 policy」的临界判据（在已有 maximization-bias 框架上加 search 维度）。"
       },
       {
         "title": "Spurious Rewards Paradox: How RLVR Activates Memorization Shortcuts",
-        "id": "2601.11061", "authors": "Yan et al.", "venue": "ICML 2026", "venueClass": "main", "status": "partial", "hasRead": true,
+        "id": "2601.11061", "authors": "Yan et al.", "venue": "ICML 2026", "venueClass": "main", "status": "filled", "hasRead": true,
         "topics": ["RLVR","Mechanistic","Reward Misspecification"],
-        "phenomenon": "用虚假/错误奖励做 RLVR，Qwen2.5 仍显著涨分；机制是中层 Anchor 触发记忆检索 + 后层 Adapter 改造表示的电路，可双向因果操控。",
-        "why": "反\"RL 涨分=学到推理\"（这里是激活记忆捷径）；有电路级机制证据。姊妹作 Exploration vs Exploitation (ICLR 2026, 2512.16912) 归因到 clipping bias 压熵。",
-        "theory": "半空。有机制，缺\"为何 clipping/熵动力学让虚假奖励也涨分\"的可证模型。",
-        "entry": "把 clipping bias 写进 policy-gradient 的熵动力学，给\"奖励与真值无关仍升\"的条件（记忆污染 vs 真推理）。"
+        "phenomenon": "用虚假/错误奖励做 RLVR，Qwen2.5 仍显著涨分；机制是中层 Anchor 触发记忆检索 + 后层 Adapter 改造表示的电路。",
+        "why": "反\"RL 涨分=学到推理\"。但证据是电路级 mechanistic。",
+        "theory": "不在你的 lane。为何虚假奖励涨分 ≈ 激活预训练已有能力 + clipping-bias（姊妹作 Exploration vs Exploitation, ICLR 2026 2512.16912 已给机制）；补的理论要分析真实网内部电路 → 非 tractable RL/优化问题，不建议作理论方向。",
+        "entry": "（不建议）除非把它抽象成「reward 与真值无关时 clipping/熵动力学仍抬升 已高概率正确输出」的 bandit 级可证命题——但那已回到经典 PG，不是这篇的电路。"
       },
       {
         "title": "The Unlearnability Phenomenon in RLVR",
-        "id": "2605.16787", "authors": "Chen, He & Zhao", "venue": "ICML 2026", "venueClass": "main", "status": "open", "hasRead": true,
+        "id": "2605.16787", "authors": "Chen, He & Zhao", "venue": "ICML 2026", "venueClass": "main", "status": "filled", "hasRead": true,
         "topics": ["RLVR","Gradient Geometry","Learnability"],
-        "phenomenon": "一部分 hard example 即使采到正确 rollout（有正奖励）也学不会；加采样/换优化器无效；病根是它们与其余样本的跨样本梯度相似度低、推理模式不可泛化。",
-        "why": "反\"有正奖励就能学上去\"；首次系统刻画。",
-        "theory": "暂空（待核）。无 learnability 的表示层判据/界。",
-        "entry": "用 NTK / 梯度对齐度定义可学性，证\"低梯度对齐 ⇒ RLVR 不可学\"，给训练前预测量。"
+        "phenomenon": "一部分 hard example 即使采到正确 rollout 也学不会；病根是它们与其余样本的跨样本梯度相似度低。",
+        "why": "反\"有正奖励就能学上去\"；首次在 RLVR 里刻画。",
+        "theory": "已被经典覆盖(自检命中)。最小模型=跨样本梯度干涉 + 线性 FA misspecification；经典：Bengio 2020(Interference & Generalization in TD)、PCGrad/CAGrad(梯度冲突)、Du–Kakade–Wang–Yang(realizability 下界)。原判「理论空白」不成立——它是这些经典结果的 RLVR costume。",
+        "entry": "残余(若做)：给「RLVR 专属」的可学性判据——把 group-relative advantage 的结构带进梯度对齐度，看是否比一般 gradient-interference 界更紧；否则直接引用经典。"
       },
       {
         "title": "The Quality-Utility Paradox: Why High-Reward Data Impairs Small Model Reasoning",
-        "id": "2606.16152", "authors": "Qian, Yang, Ma et al.", "venue": "ICML 2026", "venueClass": "main", "status": "open",
+        "id": "2606.16152", "authors": "Qian, Yang, Ma et al.", "venue": "ICML 2026", "venueClass": "main", "status": "partial", "hasRead": false,
         "topics": ["Distillation","Reward Modeling","Distribution Shift"],
-        "phenomenon": "更强模型精修的高 reward 数据，蒸馏小模型反而更差；小模型自采的低分数据更有用（跨 Qwen2.5 / LLaMA-3 / DeepSeek）。",
-        "why": "反\"高 reward = 好监督\"；跨 3 族复现 → 稳。只有 distributional-drift 启发式。",
-        "theory": "暂空（待核）。缺\"监督价值 = 质量 − 师生分布不兼容成本\"的可证刻画。",
-        "entry": "utility = 质量项 − 师生推理分布散度项，预测最优 trace 为\"高分且低 drift\"，给 Oracle 精修反而有害的判据。"
+        "phenomenon": "更强模型精修的高 reward 数据蒸馏小模型反而更差；小模型自采低分数据更有用（跨 3 族）。",
+        "why": "反\"高 reward=好监督\"，跨族复现。",
+        "theory": "半覆盖。最小模型=师生分布错配 + 学生容量受限；经典：coverage/concentrability、imitation learning 的 covariate shift(DAgger)。残余：把「reward↑ 却 utility↓」写成 质量 − 师生分布散度/容量 的干净可证界仍缺。",
+        "entry": "utility = 质量项 − 师生推理分布散度(受学生容量调制)，给 Oracle 精修反而有害的判据——在 covariate-shift/coverage 框架上加「容量」维度。"
       }
     ],
     "B": [
       {
         "title": "Aligning to Illusions: Choice Blindness in Human and AI Feedback",
-        "id": "2603.08412", "authors": "Wu", "venue": "预印本", "venueClass": "pre", "status": "open",
-        "topics": ["RLHF","Preference Elicitation","Measurement Error"],
-        "phenomenon": "RLHF 假设\"标注偏好=稳定内部状态\"。实验：偷换偏好 91% 不被察觉；LLM judge 靠浅层匹配（去掉前文 reasoning 后盲选率 ~0→>50%）；腐蚀 1/6–1/3 标签才让奖励信号减半，但 pairwise 准确率几乎不动；50% 腐蚀时 Best-of-N 等于随机而 proxy 分数还在涨。",
-        "why": "直击 RLHF 地基（偏好信号由 elicitation context 塑造，人/模型/指标都测不出）；多实验、跨架构。",
-        "theory": "暂空（待核）。",
-        "entry": "把偏好当\"elicitation-context 相关的测量误差过程\"，推\"何种腐蚀结构下奖励信号与真偏好脱钩但指标无感\"。"
+        "id": "2603.08412", "authors": "Wu", "venue": "预印本", "venueClass": "pre", "status": "partial",
+        "topics": ["RLHF","Preference Elicitation","Measurement"],
+        "phenomenon": "RLHF 假设「偏好=稳定内部状态」被证伪：偷换偏好 91% 不被察觉；腐蚀 1/6–1/3 标签才让奖励信号减半，但 pairwise 准确率几乎不动。",
+        "why": "直击 RLHF 地基；多实验跨架构。",
+        "theory": "半覆盖。「腐蚀偏好下学 reward」已有理论：R³M(ℓ1-outlier，腐蚀 sublinear 时可一致恢复)、Symmetric losses/SymPO、Robust RLHF from Corrupted Human Feedback(NeurIPS'24)。但这些都假设「有稳定 latent 强度 + 稀疏/随机腐蚀」；choice blindness 挑战「稳定偏好是否存在」本身 → 残余 gap 在 measurement/identification（偏好是 elicitation-context 相关的非稳定态）。",
+        "entry": "把偏好建成「elicitation-context 相关的非稳定测量」而非 latent+噪声，推「何种 context 结构下 BT 不可识别、但指标测不出」——这是现有 robust-label 理论不覆盖的部分。"
       },
       {
         "title": "Rethinking Plasticity in Deep RL",
-        "id": "2603.21173", "authors": "He", "venue": "预印本", "venueClass": "pre", "status": "partial", "hasRead": true,
+        "id": "2603.21173", "authors": "He", "venue": "预印本", "venueClass": "pre", "status": "filled", "hasRead": true,
         "topics": ["Plasticity Loss","Optimization Landscape","Continual RL"],
-        "phenomenon": "提出 Optimization-Centric 假设：旧任务最优点成为新任务坏局部极小、困住参数；理论上把 dormant neuron 等价于零梯度态；可塑性丢失高度任务特定（高 dormancy 网络切到很不同的任务能追平随机初始化 → 容量还在，被 landscape 抑制）。",
-        "why": "经典 RL 老大难，且这篇今年已在往理论走（见 III，正在被填的活例）。",
-        "theory": "半空（有 OCP 假设 + 零梯度等价，缺完整动力学理论）。",
-        "entry": "任务切换建成参数落入旧吸引域，刻画\"何时旧极小=新任务坏极小\"，给参数约束缓解可塑性丢失的可证条件。"
+        "phenomenon": "提出 OCP：旧任务最优点成新任务坏局部极小、困住参数；把 dormant neuron 等价于零梯度态。",
+        "why": "经典 RL 老大难。",
+        "theory": "已覆盖/在填。可塑性丢失是活跃理论域(Lyle / Nikishin / Dohare)，且本文自己就在给理论(OCP + dormancy≡零梯度)。→ 它更像 II 区「理论前沿」条目，不是待你补的经验空白。",
+        "entry": "（若做）在 OCP 之上给收敛速率级结论：证「参数约束 ⇒ 可塑性丢失上界」，把这篇的定性假设升级成定量界。"
       },
       {
         "title": "Revisiting Mixture Policies in Entropy-Regularized Actor-Critic",
-        "id": "2605.09157", "authors": "He, Neumann, Mei & White", "venue": "预印本", "venueClass": "pre", "status": "partial",
+        "id": "2605.09157", "authors": "He, Neumann, Mei & White", "venue": "预印本", "venueClass": "pre", "status": "filled", "hasRead": false,
         "topics": ["Actor-Critic","Gradient Variance","Policy Class"],
-        "phenomenon": "理论上更灵活的 mixture policy 在实践几乎没优势、被主流算法（SAC）弃用；根因是缺低方差 reparameterization（Gaussian 独享）；提出 MRP 估计器，证其方差低于 likelihood-ratio，实验才追平/偶超 Gaussian。",
-        "why": "反\"表达力更强就更好\"；把\"理论优势为何不兑现\"定位到梯度估计方差，干净。",
-        "theory": "半空（方差比较已证，缺\"表达力→性能\"何时兑现的一般理论）。",
-        "entry": "刻画 policy 表达力、梯度估计方差、熵正则三者权衡，给 mixture 优于 unimodal 的可证条件。"
+        "phenomenon": "理论上更灵活的 mixture policy 实践没优势；根因是缺低方差 reparameterization；提出 MRP 后才追平 Gaussian。",
+        "why": "反\"表达力更强就更好\"，定位到梯度方差。",
+        "theory": "已被经典覆盖。最小模型=PG 估计器方差(reparameterization vs score-function/likelihood-ratio)；经典：Greensmith–Bartlett–Baxter、Konda–Tsitsiklis 的方差分析；且本文自己已证 MRP 方差更低。",
+        "entry": "残余(弱)：给「policy 表达力 × 估计器方差 × 熵正则」三者的一般权衡界；否则本篇已基本自洽。"
       },
       {
         "title": "Similar Models Learn Differently: Final-Window Pretraining Shapes Post-Training",
-        "id": "2607.25063", "authors": "Lu, Tang & Cavallaro", "venue": "预印本", "venueClass": "pre", "status": "open",
+        "id": "2607.25063", "authors": "Lu, Tang & Cavallaro", "venue": "预印本", "venueClass": "pre", "status": "open", "hasRead": false,
         "topics": ["Pretraining Data","Post-Training","Loss Landscape"],
-        "phenomenon": "只在预训练最后 500M token（0.1–1%）数据源上不同的 6 分支，SFT 后基准近乎一致，但同样的 DPO / 可验证奖励 RL 把它们带到差异极大的终点；\"安全文本必须放最后\"才有效，跨 2 个模型族复现。",
-        "why": "受控单变量、跨族复现 → 消融干净；反\"SFT 后基准等价即可互换\"。",
-        "theory": "暂空（待核）。",
-        "entry": "\"最后窗口\"→ 初始化落入不同吸引域/曲率区，用 post-training 更新在这些区域的稳定性差异解释终点分化；找 landscape 曲率类可测代理。"
+        "phenomenon": "预训练最后 500M token(0.1–1%)不同的 6 分支，SFT 后基准近乎一致，但同样的 DPO / 可验证奖励 RL 把它们带到差异极大的终点；跨 2 族复现。",
+        "why": "受控单变量、跨族复现，消融干净。",
+        "theory": "半覆盖 → 本期唯一最接近真 gap。经典框有 critical learning periods、data-ordering→basin selection、basin-like loss landscape（部分解释「落不同 basin」）。残余明确：「最后 0.1–1% 窗口」的因果，以及「监督指标等价却在 DPO/可验证奖励 RL 下分化」的定量刻画，现有 basin/ordering 理论未覆盖。",
+        "entry": "把「最后窗口」建成初始化落入不同曲率区，用 post-training(策略梯度/偏好)更新在这些区域的稳定性差异解释终点分化；找 landscape 曲率类可测代理，给「SFT 等价 ⇏ post-training 等价」的判据。"
       },
       {
         "title": "Pessimism's Paradox: Conservative Offline Training Amplifies Reward Hacking",
-        "id": "2606.30627", "authors": "Sahoo et al.", "venue": "ICML 2026 Workshop", "venueClass": "ws", "status": "open",
+        "id": "2606.30627", "authors": "Sahoo et al.", "venue": "ICML 2026 Workshop", "venueClass": "ws", "status": "partial",
         "topics": ["Offline RL","Reward Hacking","Exploration Entropy"],
-        "phenomenon": "离线训练越保守，online 适应时 reward hacking 越严重（Goodhart gap 随保守度单调，ρ=1.0）；链：高 β 压熵 → 低多样性 → ensemble epistemic 分歧反升且更快被利用。",
-        "why": "反\"保守=安全\"核心直觉，ρ=1.0 极干净。但单模型（Qwen3-14B）、workshop 规模 → 需更大规模确认。",
-        "theory": "暂空（待核）。",
-        "entry": "把\"保守度 β → 策略熵 → RM 训练分布覆盖/epistemic → 被利用速度\"写成可证 reward-hacking 上界，求最优 β*。"
+        "phenomenon": "离线训练越保守，online 适应时 reward hacking 越严重(ρ=1.0)；链：高 β 压熵 → 低多样性 → ensemble 分歧被更快利用。",
+        "why": "反\"保守=安全\"，ρ=1.0 干净；但单模型、workshop 规模。",
+        "theory": "半覆盖。最小模型=pessimism(β)→策略熵↓→RM 训练分布 coverage↓→被利用；经典：offline RL 的 concentrability/LCB pessimism + reward-hacking/Goodhart。残余：把整条链写成「保守度 → 被利用速度」的可证上界并求最优 β*。证据还弱(需更大规模)。",
+        "entry": "在 concentrability + 熵正则框架上，证 online-adaptation 期的 Goodhart gap 关于 β 单调的充分条件，给最优 β*。"
       }
     ],
     "alsoScanned": [
-      {"title": "What do Reward Models Memorize?", "id": "2607.24484", "note": "RM 记捷径（model identity/length）非偏好质量"},
-      {"title": "Why Model Uncertainty Fails as a Risk Signal in MBRL", "id": "2607.16591", "note": "模型不确定性 ⟂ 真实风险 (r<0.15)，ICML WS"},
-      {"title": "Action from Adjacent Set > Best Prediction in World Models", "id": "2607.23602", "note": "world model argmin 选择偏差，池越大越糟"},
-      {"title": "The Safety Paradox", "id": "2606.05614", "note": "增强安全意识反而制造漏洞"},
-      {"title": "Rethinking Generalization in Reasoning SFT", "id": "2604.06628", "note": "挑战\"SFT 记忆 / RL 泛化\"叙事"}
+      {"title": "What do Reward Models Memorize?", "id": "2607.24484", "note": "RM 记捷径；归约到 shortcut learning / spurious correlation(已有理论)"},
+      {"title": "Why Model Uncertainty Fails as a Risk Signal in MBRL", "id": "2607.16591", "note": "不确定性 ⟂ 风险；归约到 epistemic 不确定性≠约束违反(部分已有)"},
+      {"title": "Action from Adjacent Set > Best Prediction in World Models", "id": "2607.23602", "note": "argmin 选择偏差；归约到 extreme value / order statistics(已有)"}
     ]
   },
   "sectionII": [
@@ -142,10 +140,10 @@
     }
   ],
   "sectionIII": [
-    {"name": "Plasticity loss / dormant neurons", "status": "partial", "note": "训练中丧失学习能力。状态更新中——B2（Rethinking Plasticity, 2603.21173）是今年往理论走的尝试 → 从\"空\"变\"半空\"。"},
-    {"name": "Spurious rewards 也能提升 RLVR", "status": "partial", "note": "错误奖励涨分。正在被填——A2 / Exploration vs Exploitation (2512.16912) 给了机制解释 → 半占。"},
-    {"name": "Primacy bias in deep RL (Nikishin 2022)", "status": "open", "note": "早期经验过拟合、重置有效。OpenAlex 现场查 14 篇被引未见系统理论（覆盖仅 14/实际数百）→ 疑似空，待复核。"},
-    {"name": "Replay ratio / update-to-data 反常 scaling", "status": "open", "note": "高 replay ratio 为何反而有效，机制有争议 → 待核。"},
-    {"name": "Reward-model overoptimization (Goodhart) scaling 曲线", "status": "open", "note": "经验规律清楚，形式理论有限 → 待核。"}
+    {"name": "Plasticity loss / dormant neurons", "status": "partial", "note": "活跃理论域(Lyle/Nikishin/Dohare)；I 区 B2(2603.21173)在给 OCP 理论 → 半覆盖，非空白。"},
+    {"name": "Spurious rewards 也能提升 RLVR", "status": "filled", "note": "已被机制/clipping-bias 解释(A2 + 2512.16912)；作为方向已基本被占。"},
+    {"name": "Final-window pretraining 决定 post-training(SFT 等价却分化)", "status": "open", "note": "本期真 open。经典 basin/ordering 只部分覆盖；见 I 区 B4。"},
+    {"name": "Primacy bias in deep RL (Nikishin 2022)", "status": "partial", "note": "与 plasticity 同源；部分已有理论，需 S2-key 复核。"},
+    {"name": "Reward-model overoptimization (Goodhart) scaling 曲线", "status": "partial", "note": "经验规律清楚，形式理论有限；与 concentrability/Goodhart 部分重叠。"}
   ]
 }
