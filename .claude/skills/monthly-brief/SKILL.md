@@ -75,6 +75,8 @@ Run everything from the project root: `/Users/muxingwang/Documents/Codex/2026-05
 
 **自检**：若含 "RLVR Unlearnability" 类 ⇒ ⑤ 应判"已被 Bengio 2020 + Du–Kakade–Wang–Yang 覆盖"（status=filled），不得标 open。
 
+**venue 诚信规则**：每条 venue 必须逐字取自 arXiv `comment` 字段（export API 的 `arxiv:comment`）；comment 为空 ⇒ 标「预印本」，**绝不从相邻论文/提交月份推断**。（2026-07 曾误把 2607.23364、2607.23679 两篇预印本标成 ICML 2026，被用户抓到——记此为戒。）
+
 ## Acceptance
 - Section I ≤ ~8–9, each ≤ ~150 字, no abstract-paraphrase sentences.
 - Each entry's 现象/理论现状/切入点 names concrete mechanisms, not "提出了一种新方法".
